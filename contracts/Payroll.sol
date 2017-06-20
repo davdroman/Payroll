@@ -21,7 +21,7 @@ contract Payroll is Owned, PayrollInterface {
 
 	}
 
-	function scapeHatch() {
+	function escapeHatch() {
 
 	}
 

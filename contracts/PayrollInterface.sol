@@ -7,7 +7,7 @@ contract PayrollInterface {
 	function removeEmployee(uint256 employeeId);
 
 	function addFunds() payable;
-	function scapeHatch();
+	function escapeHatch();
 	function addTokenFunds();
 
 	function getEmployeeCount() constant returns (uint256);
