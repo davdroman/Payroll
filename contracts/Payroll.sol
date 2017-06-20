@@ -5,7 +5,7 @@ import './PayrollInterface.sol';
 
 contract Payroll is Owned, PayrollInterface {
 
-	function addEmployee(address accountAddress, address[] allowedTokens, uint256 initialYearlyUSDSalary) onlyOwner {
+	function addEmployee(address accountAddress, address[] allowedTokens, uint256 initialYearlyUSDSalary) {
 
 	}
 
