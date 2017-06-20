@@ -1,5 +1,5 @@
-const Token = artifacts.require('./Token.sol')
+const PayrollInterface = artifacts.require('./PayrollInterface.sol')
 
 module.exports = function(deployer) {
-	deployer.deploy(Token)
+	deployer.deploy(PayrollInterface)
 }
