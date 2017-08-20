@@ -1,7 +1,7 @@
 pragma solidity ^0.4.13;
 
 contract IEmployeesController {
-	function addEmployee(address accountAddress, address[] allowedTokens, uint initialYearlyUSDSalary);
+	function addEmployee(address accountAddress, uint initialYearlyUSDSalary);
 	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary);
 	function removeEmployee(uint employeeId);
 	function getEmployeeCount() constant returns (uint);

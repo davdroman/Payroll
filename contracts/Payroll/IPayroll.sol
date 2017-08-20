@@ -1,6 +1,10 @@
 pragma solidity ^0.4.11;
 
 contract IPayroll {
-	function determineAllocation(address[] tokens, uint[] distribution);
+	function daysUntilNextPayday() constant returns(int);
 	function payday();
+
+	function tokensForAllocation() constant returns (address[]);
+	function daysUntilNextAllocation() constant returns(int);
+	function determineAllocation(address[] tokens, uint[] distribution);
 }

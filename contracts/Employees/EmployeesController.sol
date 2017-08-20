@@ -16,8 +16,6 @@ contract EmployeesController is Ownable, IEmployeesController {
 	struct Employee {
 		uint id;
 		address accountAddress;
-		address[] allowedTokens;
-		mapping (address => bool) tokenAllowance;
 		address[] allocatedTokens;
 		mapping (address => uint) tokenAllocation;
 		uint weiAllocation;
@@ -29,7 +27,7 @@ contract EmployeesController is Ownable, IEmployeesController {
 		exchangeRateOracle = usdExchangeRateOracle;
 	}
 
-	function addEmployee(address accountAddress, address[] allowedTokens, uint initialYearlyUSDSalary) onlyOwner {
+	function addEmployee(address accountAddress, uint initialYearlyUSDSalary) onlyOwner {
 		require(employeeIdsByAddress[msg.sender] == 0); // check employee doesn't already exist
 		require(accountAddress != 0x0);
 		require(allowedTokens.length > 0);
