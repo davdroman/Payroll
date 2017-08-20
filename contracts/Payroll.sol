@@ -5,11 +5,13 @@ import './Ownable.sol';
 
 contract Payroll is Ownable, IPayroll {
 
-	/*mapping (address => uint) usdExchangeRates;*/
-	mapping (uint => Employee) employeesById;
-	mapping (address => uint) employeeIdsByAddress;
+	address exchangeRateOracle;
+	mapping (address => uint) usdExchangeRates;
+
 	uint employeeCount;
 	uint nextEmployeeId = 1;
+	mapping (uint => Employee) employeesById;
+	mapping (address => uint) employeeIdsByAddress;
 
 	struct Employee {
 		uint id;
@@ -18,9 +20,13 @@ contract Payroll is Ownable, IPayroll {
 		mapping (address => bool) tokenAllowance;
 		address[] allocatedTokens;
 		mapping (address => uint) tokenAllocation;
-		uint latestTokenAllocation;
 		uint weiAllocation;
+		uint latestTokenAllocation;
 		uint yearlyUSDSalary;
+	}
+
+	function Payroll(address usdExchangeRateOracle) {
+		exchangeRateOracle = usdExchangeRateOracle;
 	}
 
 	function addEmployee(address accountAddress, address[] allowedTokens, uint initialYearlyUSDSalary) onlyOwner {
@@ -78,8 +84,8 @@ contract Payroll is Ownable, IPayroll {
 		address accountAddress,
 		address[] allowedTokens,
 		address[] allocatedTokens,
-		uint latestTokenAllocation,
 		uint weiAllocation,
+		uint latestTokenAllocation,
 		uint yearlyUSDSalary
 	) {
 		Employee employee = employeesById[employeeId];
@@ -136,6 +142,7 @@ contract Payroll is Ownable, IPayroll {
 	}
 
 	function setExchangeRate(address token, uint usdExchangeRate) {
+		require(msg.sender == exchangeRateOracle);
 		// uses decimals from token
 	}
 }

@@ -5,10 +5,11 @@ contract('Payroll', accounts => {
 	let payroll
 	let ownerAddress = accounts[0]
 	let employeeAddress = accounts[1]
+	let oracleAddress = accounts[2]
 	let antAddress = '0x960b236a07cf122663c4303350609a66a7b288c0'
 
 	beforeEach(async () => {
-		payroll = await Payroll.new()
+		payroll = await Payroll.new(oracleAddress)
 	})
 
 	context('adding employees', () => {
