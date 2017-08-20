@@ -52,7 +52,7 @@ contract('Payroll', accounts => {
 			await payroll.addEmployee(employeeAddress, [antAddress], 1000)
 			const employeeCount = await payroll.getEmployeeCount.call()
 			const employee = await payroll.getEmployee.call(1)
-			const isTokenAllowed = await payroll.isTokenAllowed.call(antAddress, 1)
+			const isTokenAllowed = await payroll.getEmployeeIsTokenAllowed.call(1, antAddress)
 			assert.equal(employeeCount, 1, 'employeeCount should be 1')
 			assert.equal(employee[0], employeeAddress, 'employeeAddress should match')
 			assert.equal(employee[1][0], antAddress, 'allowedTokens should contain ANT address')
