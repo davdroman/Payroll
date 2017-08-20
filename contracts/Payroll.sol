@@ -60,7 +60,30 @@ contract Payroll is Ownable, IPayroll {
 	}
 
 	function removeEmployee(uint employeeId) onlyOwner {
+		require(employeesById[employeeId].id > 0);
 
+		delete employeesById[employeeId].id;
+		delete employeesById[employeeId].accountAddress;
+
+		address[] allowedTokens = employeesById[employeeId].allowedTokens;
+		for (uint i = 0; i < allowedTokens.length; i++) {
+			address allowedToken = allowedTokens[i];
+			delete employeesById[employeeId].tokenAllowance[allowedToken];
+		}
+		delete employeesById[employeeId].allowedTokens;
+
+		address[] allocatedTokens = employeesById[employeeId].allocatedTokens;
+		for (uint e = 0; e < allocatedTokens.length; e++) {
+			address allocatedToken = allocatedTokens[e];
+			delete employeesById[employeeId].tokenAllocation[allocatedToken];
+		}
+		delete employeesById[employeeId].allocatedTokens;
+
+		delete employeesById[employeeId].weiAllocation;
+		delete employeesById[employeeId].latestTokenAllocation;
+		delete employeesById[employeeId].yearlyUSDSalary;
+
+		employeeCount--;
 	}
 
 	function addFunds() payable onlyOwner {
