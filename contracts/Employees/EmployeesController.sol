@@ -17,16 +17,24 @@ contract EmployeesController is Ownable, IEmployeesController {
 		uint id;
 		address accountAddress;
 		address[] allocatedTokens;
-		mapping (address => uint) tokenAllocation;
-		uint weiAllocation;
+		mapping (address => uint) tokenAllocation; // parts per 10000 (100.00%)
+		mapping (address => uint) peggedTokens; // pegged USD value, 18 decimals
+		uint weiAllocation; // parts per 10000 (100.00%)
 		uint latestTokenAllocation;
-		uint yearlyUSDSalary;
+		uint yearlyUSDSalary; // 18 decimals
 	}
 
 	function EmployeesController(address usdExchangeRateOracle) {
 		exchangeRateOracle = usdExchangeRateOracle;
 	}
 
+	/// Adds a new employee.
+	///
+	/// @param accountAddress the initial address for the employee to receive
+	/// their salary.
+	/// @param initialYearlyUSDSalary the initial yearly USD salary, expressed
+	/// with 18 decimals.
+	/// i.e. $43500.32 = 4350032e16
 	function addEmployee(address accountAddress, uint initialYearlyUSDSalary) onlyOwner {
 		require(employeeIdsByAddress[msg.sender] == 0); // check employee doesn't already exist
 		require(accountAddress != 0x0);
