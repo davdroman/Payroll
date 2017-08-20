@@ -30,25 +30,14 @@ contract EmployeesController is Ownable, IEmployeesController {
 	function addEmployee(address accountAddress, uint initialYearlyUSDSalary) onlyOwner {
 		require(employeeIdsByAddress[msg.sender] == 0); // check employee doesn't already exist
 		require(accountAddress != 0x0);
-		require(allowedTokens.length > 0);
 		require(initialYearlyUSDSalary > 0);
 
-		// add employee to employeesById
 		employeesById[nextEmployeeId].id = nextEmployeeId;
 		employeesById[nextEmployeeId].accountAddress = accountAddress;
-		employeesById[nextEmployeeId].allowedTokens = allowedTokens;
-
-		for (uint i = 0; i < allowedTokens.length; i++) {
-			address tokenAddress = allowedTokens[i];
-			employeesById[nextEmployeeId].tokenAllowance[tokenAddress] = true;
-		}
-
 		employeesById[nextEmployeeId].yearlyUSDSalary = initialYearlyUSDSalary;
 
-		// add employee id to employeeIdsByAddress
 		employeeIdsByAddress[accountAddress] = nextEmployeeId;
 
-		// +1 employee and next employee id
 		employeeCount++;
 		nextEmployeeId++;
 	}
@@ -63,13 +52,6 @@ contract EmployeesController is Ownable, IEmployeesController {
 
 		delete employeesById[employeeId].id;
 		delete employeesById[employeeId].accountAddress;
-
-		address[] allowedTokens = employeesById[employeeId].allowedTokens;
-		for (uint i = 0; i < allowedTokens.length; i++) {
-			address allowedToken = allowedTokens[i];
-			delete employeesById[employeeId].tokenAllowance[allowedToken];
-		}
-		delete employeesById[employeeId].allowedTokens;
 
 		address[] allocatedTokens = employeesById[employeeId].allocatedTokens;
 		for (uint e = 0; e < allocatedTokens.length; e++) {
@@ -91,7 +73,6 @@ contract EmployeesController is Ownable, IEmployeesController {
 
 	function getEmployee(uint employeeId) constant onlyOwner returns (
 		address accountAddress,
-		address[] allowedTokens,
 		address[] allocatedTokens,
 		uint weiAllocation,
 		uint latestTokenAllocation,
@@ -100,16 +81,11 @@ contract EmployeesController is Ownable, IEmployeesController {
 		Employee employee = employeesById[employeeId];
 		return (
 			employee.accountAddress,
-			employee.allowedTokens,
 			employee.allocatedTokens,
 			employee.latestTokenAllocation,
 			employee.weiAllocation,
 			employee.yearlyUSDSalary
 		);
-	}
-
-	function getEmployeeIsTokenAllowed(uint employeeId, address tokenAddress) constant onlyOwner returns (bool) {
-		return employeesById[employeeId].tokenAllowance[tokenAddress];
 	}
 
 	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {

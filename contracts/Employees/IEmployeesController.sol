@@ -7,13 +7,11 @@ contract IEmployeesController {
 	function getEmployeeCount() constant returns (uint);
 	function getEmployee(uint employeeId) constant returns (
 		address accountAddress,
-		address[] allowedTokens,
 		address[] allocatedTokens,
 		uint latestTokenAllocation,
 		uint weiAllocation,
 		uint yearlyUSDSalary
 	);
-	function getEmployeeIsTokenAllowed(uint employeeId, address tokenAddress) constant returns (bool);
 	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant returns (uint);
 
 	function setExchangeRate(address token, uint usdExchangeRate);
