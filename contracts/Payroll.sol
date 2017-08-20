@@ -55,8 +55,9 @@ contract Payroll is Ownable, IPayroll {
 		nextEmployeeId++;
 	}
 
-	function setEmployeeSalary(uint employeeId, uint yearlyUSDSalary) onlyOwner {
-
+	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) onlyOwner {
+		require(employeesById[employeeId].id > 0);
+		employeesById[employeeId].yearlyUSDSalary = yearlyUSDSalary;
 	}
 
 	function removeEmployee(uint employeeId) onlyOwner {
