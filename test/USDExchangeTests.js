@@ -1,6 +1,6 @@
 const assertThrow = require('./helpers/assertThrow')
 const USDExchange = artifacts.require('USDExchange')
-const HumanStandardToken = artifacts.require('HumanStandardToken')
+const ERC20Token = artifacts.require('ERC20Token')
 
 contract('USDExchange', accounts => {
 	let tokenA
@@ -16,9 +16,9 @@ contract('USDExchange', accounts => {
 	const userAddress = accounts[3]
 
 	before(async () => {
-		tokenA = await HumanStandardToken.new(1000e18, 'Test Token A', 18, 'TTA')
-		tokenB = await HumanStandardToken.new(1000e7, 'Test Token B', 7, 'TTB')
-		tokenC = await HumanStandardToken.new(1000, 'Test Token C', 0, 'TTC')
+		tokenA = await ERC20Token.new('Test Token A', 'TTA', 18, 1000e18)
+		tokenB = await ERC20Token.new('Test Token B', 'TTB', 7, 1000e7)
+		tokenC = await ERC20Token.new('Test Token C', 'TTC', 0, 1000)
 	})
 
 	beforeEach(async () => {

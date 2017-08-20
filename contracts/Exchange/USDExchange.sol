@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.11;
 
 import '../Zeppelin/SafeMath.sol';
 import '../Zeppelin/Ownable.sol';

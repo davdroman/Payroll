@@ -1,12 +1,13 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.11;
 
 import '../Zeppelin/Ownable.sol';
+import '../Exchange/USDExchange.sol';
+/*import '../Allocation/Allocator.sol';*/
 import './IEmployeesController.sol';
 
 contract EmployeesController is Ownable, IEmployeesController {
-
-	address exchangeRateOracle;
-	mapping (address => uint) usdExchangeRates;
+	/*Allocator allocator;*/
+	USDExchange exchange;
 
 	uint employeeCount;
 	uint nextEmployeeId = 1;
@@ -18,14 +19,20 @@ contract EmployeesController is Ownable, IEmployeesController {
 		address accountAddress;
 		address[] allocatedTokens;
 		mapping (address => uint) tokenAllocation; // parts per 10000 (100.00%)
-		mapping (address => uint) peggedTokens; // pegged USD value, 18 decimals
-		uint weiAllocation; // parts per 10000 (100.00%)
+		address[] peggedTokens;
+		mapping (address => uint) tokenPegging; // pegged exchange rate (18 decimals)
 		uint latestTokenAllocation;
+		uint latestPayday;
 		uint yearlyUSDSalary; // 18 decimals
 	}
 
-	function EmployeesController(address usdExchangeRateOracle) {
-		exchangeRateOracle = usdExchangeRateOracle;
+	function ExployeesController(address initialExchange) {
+		setExchange(initialExchange);
+	}
+
+	function setExchange(address newExchange) onlyOwner {
+		require(newExchange != 0x0);
+		exchange = USDExchange(newExchange);
 	}
 
 	/// Adds a new employee.
@@ -54,6 +61,8 @@ contract EmployeesController is Ownable, IEmployeesController {
 		require(employeesById[employeeId].id > 0);
 		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;
 	}
+
+	/*function setEmployeeAllocation(uint employeeId, uint )*/
 
 	function removeEmployee(uint employeeId) onlyOwner {
 		require(employeesById[employeeId].id > 0);
@@ -98,14 +107,5 @@ contract EmployeesController is Ownable, IEmployeesController {
 
 	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
 		return employeesById[employeeId].tokenAllocation[tokenAddress];
-	}
-
-	modifier onlyOracle() {
-		require(msg.sender == exchangeRateOracle);
-		_;
-	}
-
-	function setExchangeRate(address token, uint usdExchangeRate) onlyOracle {
-		// uses decimals from token
 	}
 }

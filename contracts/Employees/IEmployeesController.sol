@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.11;
 
 contract IEmployeesController {
 	function addEmployee(address accountAddress, uint initialYearlyUSDSalary);
@@ -13,6 +13,4 @@ contract IEmployeesController {
 		uint yearlyUSDSalary
 	);
 	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant returns (uint);
-
-	function setExchangeRate(address token, uint usdExchangeRate);
 }
