@@ -45,7 +45,7 @@ contract Payroll is Ownable, IPayroll {
 		employeeIdsByAddress[accountAddress] = nextEmployeeId;
 
 		// +1 employee and next employee id
-		employeeCount = employeeCount+1;
+		employeeCount++;
 		nextEmployeeId++;
 	}
 
@@ -91,6 +91,14 @@ contract Payroll is Ownable, IPayroll {
 			employee.weiAllocation,
 			employee.yearlyUSDSalary
 		);
+	}
+
+	function isTokenAllowed(address tokenAddress, uint employeeId) constant onlyOwner returns (bool) {
+		return employeesById[employeeId].tokenAllowance[tokenAddress];
+	}
+
+	function tokenAllocation(address tokenAddress, uint employeeId) constant onlyOwner returns (uint) {
+		return employeesById[employeeId].tokenAllocation[tokenAddress];
 	}
 
 	// Monthly usd amount spent in salaries
