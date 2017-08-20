@@ -92,8 +92,12 @@ contract EmployeesController is Ownable, IEmployeesController {
 		return employeesById[employeeId].tokenAllocation[tokenAddress];
 	}
 
-	function setExchangeRate(address token, uint usdExchangeRate) {
+	modifier onlyOracle() {
 		require(msg.sender == exchangeRateOracle);
+		_;
+	}
+
+	function setExchangeRate(address token, uint usdExchangeRate) onlyOracle {
 		// uses decimals from token
 	}
 }
