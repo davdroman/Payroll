@@ -93,11 +93,11 @@ contract Payroll is Ownable, IPayroll {
 		);
 	}
 
-	function isTokenAllowed(address tokenAddress, uint employeeId) constant onlyOwner returns (bool) {
+	function getEmployeeIsTokenAllowed(uint employeeId, address tokenAddress) constant onlyOwner returns (bool) {
 		return employeesById[employeeId].tokenAllowance[tokenAddress];
 	}
 
-	function tokenAllocation(address tokenAddress, uint employeeId) constant onlyOwner returns (uint) {
+	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
 		return employeesById[employeeId].tokenAllocation[tokenAddress];
 	}
 
