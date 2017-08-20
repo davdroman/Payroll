@@ -8,7 +8,7 @@ contract Payroll is Ownable, IPayroll {
 	/*mapping (address => uint) usdExchangeRates;*/
 	mapping (uint => Employee) employeesById;
 	mapping (address => uint) employeeIdsByAddress;
-	uint numberOfEmployees;
+	uint employeeCount;
 	uint nextEmployeeId = 1;
 
 	struct Employee {
@@ -45,7 +45,7 @@ contract Payroll is Ownable, IPayroll {
 		employeeIdsByAddress[accountAddress] = nextEmployeeId;
 
 		// +1 employee and next employee id
-		numberOfEmployees++;
+		employeeCount = employeeCount+1;
 		nextEmployeeId++;
 	}
 
@@ -57,7 +57,7 @@ contract Payroll is Ownable, IPayroll {
 
 	}
 
-	function addFunds() payable {
+	function addFunds() payable onlyOwner {
 		require(msg.value > 0);
 	}
 
@@ -66,25 +66,40 @@ contract Payroll is Ownable, IPayroll {
 	}
 
 	// Use approveAndCall or ERC223 tokenFallback
-	function addTokenFunds() {
+	function addTokenFunds() onlyOwner {
 
 	}
 
-	function getEmployeeCount() constant returns (uint) {
-		return numberOfEmployees;
+	function getEmployeeCount() constant onlyOwner returns (uint) {
+		return employeeCount;
 	}
 
-	function getEmployee(uint employeeId) constant returns (address) {
-
+	function getEmployee(uint employeeId) constant onlyOwner returns (
+		address accountAddress,
+		address[] allowedTokens,
+		address[] allocatedTokens,
+		uint latestTokenAllocation,
+		uint weiAllocation,
+		uint yearlyUSDSalary
+	) {
+		Employee employee = employeesById[employeeId];
+		return (
+			employee.accountAddress,
+			employee.allowedTokens,
+			employee.allocatedTokens,
+			employee.latestTokenAllocation,
+			employee.weiAllocation,
+			employee.yearlyUSDSalary
+		);
 	}
 
 	// Monthly usd amount spent in salaries
-	function calculatePayrollBurnrate() constant returns (uint) {
+	function calculatePayrollBurnrate() constant onlyOwner returns (uint) {
 
 	}
 
 	// Days until the contract can run out of funds
-	function calculatePayrollRunway() constant returns (uint) {
+	function calculatePayrollRunway() constant onlyOwner returns (uint) {
 
 	}
 

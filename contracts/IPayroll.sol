@@ -11,7 +11,14 @@ contract IPayroll {
 	function addTokenFunds();
 
 	function getEmployeeCount() constant returns (uint);
-	function getEmployee(uint employeeId) constant returns (address employee);
+	function getEmployee(uint employeeId) constant returns (
+		address accountAddress,
+		address[] allowedTokens,
+		address[] allocatedTokens,
+		uint latestTokenAllocation,
+		uint weiAllocation,
+		uint yearlyUSDSalary
+	);
 
 	function calculatePayrollBurnrate() constant returns (uint);
 	function calculatePayrollRunway() constant returns (uint);
