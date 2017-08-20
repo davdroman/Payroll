@@ -1,28 +1,68 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.13;
 
-import './Owned.sol';
-import './PayrollInterface.sol';
+import './IPayroll.sol';
+import './Ownable.sol';
 
-contract Payroll is Owned, PayrollInterface {
+contract Payroll is Ownable, IPayroll {
 
-	function addEmployee(address accountAddress, address[] allowedTokens, uint256 initialYearlyUSDSalary) {
+	/*mapping (address => uint) usdExchangeRates;*/
+	mapping (uint => Employee) employeesById;
+	mapping (address => uint) employeeIdsByAddress;
+	uint numberOfEmployees;
+	uint nextEmployeeId = 1;
+
+	struct Employee {
+		uint id;
+		address accountAddress;
+		address[] allowedTokens;
+		mapping (address => bool) tokenAllowance;
+		address[] allocatedTokens;
+		mapping (address => uint) tokenAllocation;
+		uint latestTokenAllocation;
+		uint weiAllocation;
+		uint yearlyUSDSalary;
+	}
+
+	function addEmployee(address accountAddress, address[] allowedTokens, uint initialYearlyUSDSalary) onlyOwner {
+		require(employeeIdsByAddress[msg.sender] == 0); // check employee doesn't already exist
+		require(accountAddress != 0x0);
+		require(allowedTokens.length > 0);
+		require(initialYearlyUSDSalary > 0);
+
+		// add employee to employeesById
+		employeesById[nextEmployeeId].id = nextEmployeeId;
+		employeesById[nextEmployeeId].accountAddress = accountAddress;
+		employeesById[nextEmployeeId].allowedTokens = allowedTokens;
+
+		for (uint i = 0; i < allowedTokens.length; i++) {
+			address tokenAddress = allowedTokens[i];
+			employeesById[nextEmployeeId].tokenAllowance[tokenAddress] = true;
+		}
+
+		employeesById[nextEmployeeId].yearlyUSDSalary = initialYearlyUSDSalary;
+
+		// add employee id to employeeIdsByAddress
+		employeeIdsByAddress[accountAddress] = nextEmployeeId;
+
+		// +1 employee and next employee id
+		numberOfEmployees++;
+		nextEmployeeId++;
+	}
+
+	function setEmployeeSalary(uint employeeId, uint yearlyUSDSalary) onlyOwner {
 
 	}
 
-	function setEmployeeSalary(uint256 employeeId, uint256 yearlyUSDSalary) {
-
-	}
-
-	function removeEmployee(uint256 employeeId) {
+	function removeEmployee(uint employeeId) onlyOwner {
 
 	}
 
 	function addFunds() payable {
-
+		require(msg.value > 0);
 	}
 
-	function escapeHatch() {
-
+	function escapeHatch() onlyOwner {
+		selfdestruct(owner);
 	}
 
 	// Use approveAndCall or ERC223 tokenFallback
@@ -30,27 +70,41 @@ contract Payroll is Owned, PayrollInterface {
 
 	}
 
-	function getEmployeeCount() constant returns (uint256) {
-
+	function getEmployeeCount() constant returns (uint) {
+		return numberOfEmployees;
 	}
 
-	function getEmployee(uint256 employeeId) constant returns (address employee) {
-		// Return all important info too
+	function getEmployee(uint employeeId) constant returns (address) {
+
 	}
 
 	// Monthly usd amount spent in salaries
-	function calculatePayrollBurnrate() constant returns (uint256) {
+	function calculatePayrollBurnrate() constant returns (uint) {
 
 	}
 
 	// Days until the contract can run out of funds
-	function calculatePayrollRunway() constant returns (uint256) {
+	function calculatePayrollRunway() constant returns (uint) {
 
 	}
 
-	// only callable once every 6 months
-	function determineAllocation(address[] tokens, uint256[] distribution) {
+	/// Determines allocation of ERC20 tokens as an employee's salary.
+	///
+	/// @param tokenAddresses specifies the token addresses to be paid.
+	/// @param distributions is an array of integer percentages with a
+	/// max sum of 10000 (100.00%). Wei is allocated as the amount left (if any)
+	/// between the max sum and the actual sum of the distributions.
+	/// i.e. a [5000, 3000] token distribution would result in 2000 (20%) left
+	/// for wei allocation.
+	function determineAllocation(address[] tokenAddresses, uint[] distributions) {
+		/*require(employees[msg.sender].length != 0);
+		require(tokenAddress.length > 0);
+		require(tokenAddress.length == distribution.length);
 
+		for (var i = 0; i < tokenAddress.length; i++) {
+			address tokenAddress = tokenAddresses[i];
+			uint distribution = distribution[i];
+		}*/
 	}
 
 	// only callable once a month
@@ -58,7 +112,7 @@ contract Payroll is Owned, PayrollInterface {
 
 	}
 
-	function setExchangeRate(address token, uint256 usdExchangeRate) {
+	function setExchangeRate(address token, uint usdExchangeRate) {
 		// uses decimals from token
 	}
 }
