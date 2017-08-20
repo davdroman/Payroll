@@ -2,9 +2,8 @@ pragma solidity ^0.4.11;
 
 import '../Zeppelin/SafeMath.sol';
 import '../Zeppelin/Ownable.sol';
+import '../Tokens/IERC20Token.sol';
 import './IExchange.sol';
-
-contract TokenWithDecimals { uint8 public decimals; }
 
 contract USDExchange is Ownable, IExchange {
 	address public exchangeRateOracle;
@@ -24,7 +23,7 @@ contract USDExchange is Ownable, IExchange {
 		require(token != 0x0);
 		require(rate > 0);
 
-		uint decimals = TokenWithDecimals(token).decimals();
+		uint decimals = IERC20Token(token).decimals();
 		return SafeMath.div(SafeMath.mul(amount, 10**decimals), rate);
 	}
 

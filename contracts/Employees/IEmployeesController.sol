@@ -8,8 +8,9 @@ contract IEmployeesController {
 	function getEmployee(uint employeeId) constant returns (
 		address accountAddress,
 		address[] allocatedTokens,
+		address[] peggedTokens,
 		uint latestTokenAllocation,
-		uint weiAllocation,
+		uint latestPayday,
 		uint yearlyUSDSalary
 	);
 	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant returns (uint);
