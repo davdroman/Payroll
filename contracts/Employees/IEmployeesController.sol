@@ -1,6 +1,6 @@
 pragma solidity ^0.4.13;
 
-contract IEmployeeController {
+contract IEmployeesController {
 	function addEmployee(address accountAddress, address[] allowedTokens, uint initialYearlyUSDSalary);
 	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary);
 	function removeEmployee(uint employeeId);
@@ -13,4 +13,8 @@ contract IEmployeeController {
 		uint weiAllocation,
 		uint yearlyUSDSalary
 	);
+	function getEmployeeIsTokenAllowed(uint employeeId, address tokenAddress) constant returns (bool);
+	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant returns (uint);
+
+	function setExchangeRate(address token, uint usdExchangeRate);
 }

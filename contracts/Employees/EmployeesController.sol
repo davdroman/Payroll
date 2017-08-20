@@ -1,9 +1,9 @@
 pragma solidity ^0.4.13;
 
-import './IPayroll.sol';
-import './Ownable.sol';
+import '../Zeppelin/Ownable.sol';
+import './IEmployeesController.sol';
 
-contract Payroll is Ownable, IPayroll {
+contract EmployeesController is Ownable, IEmployeesController {
 
 	address exchangeRateOracle;
 	mapping (address => uint) usdExchangeRates;
@@ -25,7 +25,7 @@ contract Payroll is Ownable, IPayroll {
 		uint yearlyUSDSalary;
 	}
 
-	function Payroll(address usdExchangeRateOracle) {
+	function EmployeesController(address usdExchangeRateOracle) {
 		exchangeRateOracle = usdExchangeRateOracle;
 	}
 
@@ -57,7 +57,7 @@ contract Payroll is Ownable, IPayroll {
 
 	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) onlyOwner {
 		require(employeesById[employeeId].id > 0);
-		employeesById[employeeId].yearlyUSDSalary = yearlyUSDSalary;
+		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;
 	}
 
 	function removeEmployee(uint employeeId) onlyOwner {
@@ -85,19 +85,6 @@ contract Payroll is Ownable, IPayroll {
 		delete employeesById[employeeId].yearlyUSDSalary;
 
 		employeeCount--;
-	}
-
-	function addFunds() payable onlyOwner {
-		require(msg.value > 0);
-	}
-
-	function escapeHatch() onlyOwner {
-		selfdestruct(owner);
-	}
-
-	// Use approveAndCall or ERC223 tokenFallback
-	function addTokenFunds() onlyOwner {
-
 	}
 
 	function getEmployeeCount() constant onlyOwner returns (uint) {
@@ -129,40 +116,6 @@ contract Payroll is Ownable, IPayroll {
 
 	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
 		return employeesById[employeeId].tokenAllocation[tokenAddress];
-	}
-
-	// Monthly usd amount spent in salaries
-	function calculatePayrollBurnrate() constant onlyOwner returns (uint) {
-
-	}
-
-	// Days until the contract can run out of funds
-	function calculatePayrollRunway() constant onlyOwner returns (uint) {
-
-	}
-
-	/// Determines allocation of ERC20 tokens as an employee's salary.
-	///
-	/// @param tokenAddresses specifies the token addresses to be paid.
-	/// @param distributions is an array of integer percentages with a
-	/// max sum of 10000 (100.00%). Wei is allocated as the amount left (if any)
-	/// between the max sum and the actual sum of the distributions.
-	/// i.e. a [5000, 3000] token distribution would result in 2000 (20%) left
-	/// for wei allocation.
-	function determineAllocation(address[] tokenAddresses, uint[] distributions) {
-		/*require(employees[msg.sender].length != 0);
-		require(tokenAddress.length > 0);
-		require(tokenAddress.length == distribution.length);
-
-		for (var i = 0; i < tokenAddress.length; i++) {
-			address tokenAddress = tokenAddresses[i];
-			uint distribution = distribution[i];
-		}*/
-	}
-
-	// only callable once a month
-	function payday() {
-
 	}
 
 	function setExchangeRate(address token, uint usdExchangeRate) {
