@@ -18,8 +18,8 @@ contract EtherToken is IEtherToken, Owned, ERC20Token, TokenHolder {
     /**
         @dev constructor
     */
-    function EtherToken(uint256 _totalSupply)
-        ERC20Token('Ether Token', 'ETH', 18, _totalSupply) {
+    function EtherToken()
+        ERC20Token('Ether Token', 'ETH', 18) {
     }
 
     /**

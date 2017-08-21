@@ -16,9 +16,9 @@ contract('USDExchange', accounts => {
 	const userAddress = accounts[3]
 
 	before(async () => {
-		tokenA = await ERC20Token.new('Test Token A', 'TTA', 18, 1000e18)
-		tokenB = await ERC20Token.new('Test Token B', 'TTB', 7, 1000e7)
-		tokenC = await ERC20Token.new('Test Token C', 'TTC', 0, 1000)
+		tokenA = await ERC20Token.new('Test Token A', 'TTA', 18)
+		tokenB = await ERC20Token.new('Test Token B', 'TTB', 7)
+		tokenC = await ERC20Token.new('Test Token C', 'TTC', 0)
 	})
 
 	beforeEach(async () => {
