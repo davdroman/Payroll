@@ -3,6 +3,7 @@ pragma solidity ^0.4.11;
 contract IEmployeesController {
 	function addEmployee(address accountAddress, uint initialYearlyUSDSalary);
 	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary);
+	function setEmployeeAllocation(address[] tokens, uint[] distribution) external;
 	function removeEmployee(uint employeeId);
 	function getEmployeeCount() constant returns (uint);
 	function getEmployee(uint employeeId) constant returns (

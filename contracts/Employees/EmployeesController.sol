@@ -1,12 +1,11 @@
 pragma solidity ^0.4.11;
 
+import '../Zeppelin/SafeMath.sol';
 import '../Zeppelin/Ownable.sol';
 import '../Exchange/USDExchange.sol';
-/*import '../Allocation/Allocator.sol';*/
 import './IEmployeesController.sol';
 
 contract EmployeesController is Ownable, IEmployeesController {
-	/*Allocator allocator;*/
 	USDExchange exchange;
 
 	uint employeeCount;
@@ -26,7 +25,7 @@ contract EmployeesController is Ownable, IEmployeesController {
 		uint yearlyUSDSalary; // 18 decimals
 	}
 
-	function ExployeesController(address initialExchange) {
+	function EmployeesController(address initialExchange) {
 		setExchange(initialExchange);
 	}
 
@@ -62,7 +61,44 @@ contract EmployeesController is Ownable, IEmployeesController {
 		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;
 	}
 
-	/*function setEmployeeAllocation(uint employeeId, uint )*/
+	function setEmployeeAllocation(address[] tokens, uint[] distribution) notOwner external {
+		uint employeeId = employeeIdsByAddress[msg.sender];
+		require(employeesById[employeeId].id > 0);
+		require(tokens.length == distribution.length);
+		require(now - employeesById[employeeId].latestTokenAllocation >= 182 days);
+
+		// check distribution adds up to 100%
+		uint sum = 0;
+		for (uint e = 0; e < distribution.length; e++) {
+			sum += distribution[e];
+		}
+		require(sum == 10000);
+
+		// clean up old allocation
+		address[] allocatedTokens = employeesById[employeeId].allocatedTokens;
+		for (uint i = 0; i < allocatedTokens.length; i++) {
+			address allocatedToken = allocatedTokens[i];
+			delete employeesById[employeeId].tokenAllocation[allocatedToken];
+		}
+		delete employeesById[employeeId].allocatedTokens;
+
+		// set new allocation
+		for (uint o = 0; o < tokens.length; o++) {
+			address token = tokens[o];
+			employeesById[employeeId].allocatedTokens.push(token);
+			employeesById[employeeId].tokenAllocation[token] = distribution[o];
+
+			// peg new token
+			if (employeesById[employeeId].tokenPegging[token] == 0) {
+				uint tokenExchangeRate = exchange.exchangeRates(token);
+				assert(tokenExchangeRate > 0);
+				employeesById[employeeId].peggedTokens.push(token);
+				employeesById[employeeId].tokenPegging[token] = tokenExchangeRate;
+			}
+		}
+
+		employeesById[employeeId].latestTokenAllocation = now;
+	}
 
 	function removeEmployee(uint employeeId) onlyOwner {
 		require(employeesById[employeeId].id > 0);
@@ -77,7 +113,6 @@ contract EmployeesController is Ownable, IEmployeesController {
 		}
 		delete employeesById[employeeId].allocatedTokens;
 
-		delete employeesById[employeeId].weiAllocation;
 		delete employeesById[employeeId].latestTokenAllocation;
 		delete employeesById[employeeId].yearlyUSDSalary;
 
@@ -91,16 +126,18 @@ contract EmployeesController is Ownable, IEmployeesController {
 	function getEmployee(uint employeeId) constant onlyOwner returns (
 		address accountAddress,
 		address[] allocatedTokens,
-		uint weiAllocation,
+		address[] peggedTokens,
 		uint latestTokenAllocation,
+		uint latestPayday,
 		uint yearlyUSDSalary
 	) {
 		Employee employee = employeesById[employeeId];
 		return (
 			employee.accountAddress,
 			employee.allocatedTokens,
+			employee.peggedTokens,
 			employee.latestTokenAllocation,
-			employee.weiAllocation,
+			employee.latestPayday,
 			employee.yearlyUSDSalary
 		);
 	}
