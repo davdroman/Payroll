@@ -18,7 +18,7 @@ contract USDExchange is Ownable, IExchange {
 		exchangeRateOracle = newOracle;
 	}
 
-	function peggedValue(address token, uint amount, uint rate) constant returns (uint) {
+	function exchange(address token, uint amount, uint rate) constant returns (uint) {
 		if (amount == 0) return 0;
 		require(token != 0x0);
 		require(rate > 0);

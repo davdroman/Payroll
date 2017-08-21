@@ -79,13 +79,13 @@ contract('USDExchange', accounts => {
 
 	context('pegging with external rate', () => {
 		it('returns 0 when amount is 0 regardless of other parameters', async () => {
-			const value = await exchange.peggedValue.call(EMPTY_ADDRESS, 0, 0)
+			const value = await exchange.exchange.call(EMPTY_ADDRESS, 0, 0)
 			assert.equal(value, 0, 'Pegged value should be 0 for amount 0')
 		})
 
 		it('throws when address is invalid', async () => {
 			try {
-				await exchange.peggedValue.call(EMPTY_ADDRESS, 20e18, 2e18)
+				await exchange.exchange.call(EMPTY_ADDRESS, 20e18, 2e18)
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -94,7 +94,7 @@ contract('USDExchange', accounts => {
 
 		it('throws when exchange rate is 0', async () => {
 			try {
-				await exchange.peggedValue.call(tokenA.address, 20e18, 0)
+				await exchange.exchange.call(tokenA.address, 20e18, 0)
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -102,17 +102,17 @@ contract('USDExchange', accounts => {
 		})
 
 		it('succeeds to peg token with 18 decimals', async () => {
-			const value = await exchange.peggedValue.call(tokenA.address, 156.7701e18, 5.22567e18)
+			const value = await exchange.exchange.call(tokenA.address, 156.7701e18, 5.22567e18)
 			assert.equal(value, 30e18, 'Pegged value did not match')
 		})
 
 		it('succeeds to peg token with 7 decimals', async () => {
-			const value = await exchange.peggedValue.call(tokenB.address, 20.50e18, 2e18)
+			const value = await exchange.exchange.call(tokenB.address, 20.50e18, 2e18)
 			assert.equal(value, 10.25e7, 'Pegged value did not match')
 		})
 
 		it('succeeds to peg token with 0 decimals', async () => {
-			const value = await exchange.peggedValue.call(tokenC.address, 20.50e18, 2e18)
+			const value = await exchange.exchange.call(tokenC.address, 20.50e18, 2e18)
 			assert.equal(value, 10, 'Pegged value did not match')
 		})
 	})
