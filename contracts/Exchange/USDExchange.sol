@@ -28,6 +28,10 @@ contract USDExchange is Ownable, IExchange {
 		return SafeMath.div(SafeMath.mul(amount, 10**decimals), rate);
 	}
 
+	function getAvailableTokens() constant returns(address[]) {
+		return availableTokens;
+	}
+
 	// Oracle-only
 
 	modifier onlyOracle() {

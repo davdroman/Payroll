@@ -55,9 +55,9 @@ contract('USDExchange', accounts => {
 
 		it('succeeds', async () => {
 			await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddressA })
-			const tokenAAddress = await exchange.availableTokens.call(0)
+			const availableTokens = await exchange.getAvailableTokens.call()
 			const exchangeRates = await exchange.exchangeRates.call(tokenA.address)
-			assert.equal(tokenAAddress, tokenA.address, 'Token was not made available')
+			assert.deepEqual(availableTokens, [tokenA.address], 'Token was not made available')
 			assert.equal(exchangeRates, 2e18, 'Exchange rate was not set')
 		})
 	})
