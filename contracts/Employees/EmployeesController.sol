@@ -100,6 +100,10 @@ contract EmployeesController is Ownable, IEmployeesController {
 		employeesById[employeeId].latestTokenAllocation = now;
 	}
 
+	function resetEmployeeLatestTokenAllocation(uint employeeId) onlyOwner {
+		delete employeesById[employeeId].latestTokenAllocation;
+	}
+
 	function removeEmployee(uint employeeId) onlyOwner {
 		require(employeesById[employeeId].id > 0);
 
@@ -144,5 +148,9 @@ contract EmployeesController is Ownable, IEmployeesController {
 
 	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
 		return employeesById[employeeId].tokenAllocation[tokenAddress];
+	}
+
+	function getEmployeeTokenPegging(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
+		return employeesById[employeeId].tokenPegging[tokenAddress];
 	}
 }

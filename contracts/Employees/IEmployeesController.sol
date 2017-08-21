@@ -15,4 +15,5 @@ contract IEmployeesController {
 		uint yearlyUSDSalary
 	);
 	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant returns (uint);
+	function getEmployeeTokenPegging(uint employeeId, address tokenAddress) constant returns (uint);
 }
