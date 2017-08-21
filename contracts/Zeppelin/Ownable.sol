@@ -29,6 +29,15 @@ contract Ownable {
 
 
   /**
+   * @dev Throws if called by owner.
+   */
+  modifier notOwner() {
+	require(msg.sender != owner);
+	_;
+  }
+
+
+  /**
    * @dev Allows the current owner to transfer control of the contract to a newOwner.
    * @param newOwner The address to transfer ownership to.
    */
