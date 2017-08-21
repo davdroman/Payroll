@@ -66,7 +66,7 @@ contract EmployeesController is Ownable, IEmployeesController {
 		uint employeeId = employeeIdsByAddress[msg.sender];
 		require(employeesById[employeeId].id > 0);
 		require(tokens.length == distribution.length);
-		require(now - employeesById[employeeId].latestTokenAllocation >= 182 days);
+		require(SafeMath.sub(now, employeesById[employeeId].latestTokenAllocation) >= 182 days);
 
 		// check distribution adds up to 100%
 		uint sum = 0;
