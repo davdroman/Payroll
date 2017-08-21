@@ -58,6 +58,7 @@ contract EmployeesController is Ownable, IEmployeesController {
 
 	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) onlyOwner {
 		require(employeesById[employeeId].id > 0);
+		require(newYearlyUSDSalary > 0);
 		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;
 	}
 
