@@ -108,6 +108,23 @@ contract('EmployeesController', accounts => {
 			throw new Error('Allocation was set with no exchange rates')
 		})
 
+		it('throws when distribution does not add up', async () => {
+			try {
+				await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
+				await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
+				await exchange.setExchangeRate(tokenC.address, 6e18, { from: oracleAddress })
+				await controller.addEmployee(employeeAddress, 1000)
+				await controller.setEmployeeAllocation.call(
+					[tokenA.address, tokenB.address, tokenC.address],
+					[2000, 3000, 2000],
+					{ from: employeeAddress }
+				)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Allocation was set with total distribution != 10000')
+		})
+
 		it('succeeds', async () => {
 			await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
 			await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
@@ -134,7 +151,7 @@ contract('EmployeesController', accounts => {
 				[5000, 3000, 2000],
 				{ from: employeeAddress }
 			)
-			
+
 			try {
 				await controller.setEmployeeAllocation.call(
 					[tokenA.address, tokenB.address, tokenC.address],
