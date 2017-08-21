@@ -7,6 +7,7 @@ import './IExchange.sol';
 
 contract USDExchange is Ownable, IExchange {
 	address public exchangeRateOracle;
+	address[] public availableTokens;
 	mapping (address => uint) public exchangeRates; // 18 decimals
 
 	function USDExchange(address usdExchangeRateOracle) {
@@ -36,6 +37,14 @@ contract USDExchange is Ownable, IExchange {
 
 	function setExchangeRate(address token, uint exchangeRate) onlyOracle {
 		require(token != 0x0);
+		require(exchangeRate > 0);
+
+		// add if new token
+		if (exchangeRates[token] == 0) {
+			availableTokens.push(token);
+		}
+
+		// set exchange rate
 		exchangeRates[token] = exchangeRate;
 	}
 }

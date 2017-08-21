@@ -44,9 +44,20 @@ contract('USDExchange', accounts => {
 			throw new Error('Exchange rate was set for invalid address')
 		})
 
+		it('throws when exchange rate is zero', async () => {
+			try {
+				await exchange.setExchangeRate.call(tokenA.address, 0, { from: oracleAddressA })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Exchange rate was set with a value of zero')
+		})
+
 		it('succeeds', async () => {
 			await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddressA })
+			const tokenAAddress = await exchange.availableTokens.call(0)
 			const exchangeRates = await exchange.exchangeRates.call(tokenA.address)
+			assert.equal(tokenAAddress, tokenA.address, 'Token was not made available')
 			assert.equal(exchangeRates, 2e18, 'Exchange rate was not set')
 		})
 	})
