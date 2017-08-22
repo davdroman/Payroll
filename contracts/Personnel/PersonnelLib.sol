@@ -1,17 +1,13 @@
 pragma solidity ^0.4.11;
 
-import '../Zeppelin/SafeMath.sol';
-import '../Zeppelin/Ownable.sol';
-import '../Exchange/USDExchange.sol';
-import './IEmployeesController.sol';
-
-contract EmployeesController is Ownable, IEmployeesController {
-	USDExchange exchange;
-
-	uint employeeCount;
-	uint nextEmployeeId = 1;
-	mapping (uint => Employee) employeesById;
-	mapping (address => uint) employeeIdsByAddress;
+// I'm *so* tempted to name this HRLib.
+library PersonnelLib {
+	struct Personnel {
+		uint employeeCount;
+		uint nextEmployeeId;
+		mapping (uint => Employee) employeesById;
+		mapping (address => uint) employeeIdsByAddress;
+	}
 
 	struct Employee {
 		uint id;
@@ -25,13 +21,8 @@ contract EmployeesController is Ownable, IEmployeesController {
 		uint yearlyUSDSalary; // 18 decimals
 	}
 
-	function EmployeesController(address initialExchange) {
-		setExchange(initialExchange);
-	}
-
-	function setExchange(address newExchange) onlyOwner {
-		require(newExchange != 0x0);
-		exchange = USDExchange(newExchange);
+	function init(Personnel storage personnel) {
+		personnel.nextEmployeeId = 1; // id == 0 is invalid, and used to determine inexistent employees
 	}
 
 	/// Adds a new employee.
@@ -41,8 +32,8 @@ contract EmployeesController is Ownable, IEmployeesController {
 	/// @param initialYearlyUSDSalary the initial yearly USD salary, expressed
 	/// with 18 decimals.
 	/// i.e. $43500.32 = 4350032e16
-	function addEmployee(address accountAddress, uint initialYearlyUSDSalary) onlyOwner {
-		require(employeeIdsByAddress[msg.sender] == 0); // check employee doesn't already exist
+	function addEmployee(Personnel storage personnel, address accountAddress, uint initialYearlyUSDSalary) {
+		/*require(employeeIdsByAddress[msg.sender] == 0); // check employee doesn't already exist
 		require(accountAddress != 0x0);
 		require(initialYearlyUSDSalary > 0);
 
@@ -53,17 +44,17 @@ contract EmployeesController is Ownable, IEmployeesController {
 		employeeIdsByAddress[accountAddress] = nextEmployeeId;
 
 		employeeCount++;
-		nextEmployeeId++;
+		nextEmployeeId++;*/
 	}
 
-	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) onlyOwner {
-		require(employeesById[employeeId].id > 0);
+	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) {
+		/*require(employeesById[employeeId].id > 0);
 		require(newYearlyUSDSalary > 0);
-		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;
+		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;*/
 	}
 
-	function setEmployeeAllocation(address[] tokens, uint[] distribution) notOwner external {
-		uint employeeId = employeeIdsByAddress[msg.sender];
+	function setEmployeeAllocation(address[] tokens, uint[] distribution) {
+		/*uint employeeId = employeeIdsByAddress[msg.sender];
 		require(employeesById[employeeId].id > 0);
 		require(tokens.length == distribution.length);
 		require(SafeMath.sub(now, employeesById[employeeId].latestTokenAllocation) >= 182 days);
@@ -98,15 +89,15 @@ contract EmployeesController is Ownable, IEmployeesController {
 			}
 		}
 
-		employeesById[employeeId].latestTokenAllocation = now;
+		employeesById[employeeId].latestTokenAllocation = now;*/
 	}
 
-	function resetEmployeeLatestTokenAllocation(uint employeeId) onlyOwner {
-		delete employeesById[employeeId].latestTokenAllocation;
+	function resetEmployeeLatestTokenAllocation(uint employeeId) {
+		/*delete employeesById[employeeId].latestTokenAllocation;*/
 	}
 
-	function removeEmployee(uint employeeId) onlyOwner {
-		require(employeesById[employeeId].id > 0);
+	function removeEmployee(uint employeeId) {
+		/*require(employeesById[employeeId].id > 0);
 
 		delete employeesById[employeeId].id;
 		delete employeesById[employeeId].accountAddress;
@@ -121,14 +112,14 @@ contract EmployeesController is Ownable, IEmployeesController {
 		delete employeesById[employeeId].latestTokenAllocation;
 		delete employeesById[employeeId].yearlyUSDSalary;
 
-		employeeCount--;
+		employeeCount--;*/
 	}
 
-	function getEmployeeCount() constant onlyOwner returns (uint) {
-		return employeeCount;
+	function getEmployeeCount() constant returns (uint) {
+		/*return employeeCount;*/
 	}
 
-	function getEmployee(uint employeeId) constant onlyOwner returns (
+	function getEmployee(uint employeeId) constant returns (
 		address accountAddress,
 		address[] allocatedTokens,
 		address[] peggedTokens,
@@ -136,7 +127,7 @@ contract EmployeesController is Ownable, IEmployeesController {
 		uint latestPayday,
 		uint yearlyUSDSalary
 	) {
-		Employee employee = employeesById[employeeId];
+		/*Employee employee = employeesById[employeeId];
 		return (
 			employee.accountAddress,
 			employee.allocatedTokens,
@@ -144,14 +135,28 @@ contract EmployeesController is Ownable, IEmployeesController {
 			employee.latestTokenAllocation,
 			employee.latestPayday,
 			employee.yearlyUSDSalary
-		);
+		);*/
 	}
 
-	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
+	function allocatedTokens(uint employeeId) constant returns(address[] allocatedTokens) {
+		/*return employeesById[employeeId].allocatedTokens;*/
+	}
+
+	/*function tokenAllocation(uint employeeId, address tokenAddress) constant returns (uint) {
 		return employeesById[employeeId].tokenAllocation[tokenAddress];
 	}
 
-	function getEmployeeTokenPegging(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
+	function tokenPegging(uint employeeId, address tokenAddress) constant returns (uint) {
 		return employeesById[employeeId].tokenPegging[tokenAddress];
+	}*/
+
+	// Monthly usd amount spent in salaries
+	function payrollBurnrate(Personnel storage personnel) constant returns (uint) {
+
+	}
+
+	// Days until the contract can run out of funds
+	function payrollRunway() constant returns (uint) {
+
 	}
 }

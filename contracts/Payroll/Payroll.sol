@@ -1,19 +1,78 @@
 pragma solidity ^0.4.11;
 
 import './IPayroll.sol';
+import '../Personnel/PersonnelLib.sol';
+import '../Exchange/USDExchange.sol';
+import '../Zeppelin/SafeMath.sol';
 import '../Zeppelin/Ownable.sol';
-import '../Employees/EmployeesController.sol';
 
 contract Payroll is IPayroll, Ownable {
-	EmployeesController employees;
+	using PersonnelLib for PersonnelLib.Personnel;
 
-	function Payroll(address initialEmployeesController) {
-		setEmployeesController(initialEmployeesController);
+	PersonnelLib.Personnel public personnel;
+	USDExchange public exchange;
+
+	function Payroll(address initialExchange) {
+		setExchange(initialExchange);
 	}
 
-	function setEmployeesController(address newEmployeesController) onlyOwner {
-		require(newEmployeesController != 0x0);
-		employees = EmployeesController(newEmployeesController);
+	function setExchange(address newExchange) onlyOwner {
+		require(newExchange != 0x0);
+		exchange = USDExchange(newExchange);
+	}
+
+	/// Adds a new employee.
+	///
+	/// @param accountAddress the initial address for the employee to receive
+	/// their salary.
+	/// @param initialYearlyUSDSalary the initial yearly USD salary, expressed
+	/// with 18 decimals.
+	/// i.e. $43500.32 = 4350032e16
+	function addEmployee(address accountAddress, uint initialYearlyUSDSalary) onlyOwner {
+
+	}
+
+	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) onlyOwner {
+
+	}
+
+	function setEmployeeAllocation(address[] tokens, uint[] distribution) notOwner external {
+
+	}
+
+	function resetEmployeeLatestTokenAllocation(uint employeeId) onlyOwner {
+
+	}
+
+	function removeEmployee(uint employeeId) onlyOwner {
+
+	}
+
+	function getEmployeeCount() constant onlyOwner returns (uint) {
+
+	}
+
+	function getEmployee(uint employeeId) constant onlyOwner returns (
+		address accountAddress,
+		address[] allocatedTokens,
+		address[] peggedTokens,
+		uint latestTokenAllocation,
+		uint latestPayday,
+		uint yearlyUSDSalary
+	) {
+
+	}
+
+	function getEmployeeAllocatedTokens(uint employeeId) constant returns(address[] allocatedTokens) {
+
+	}
+
+	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
+
+	}
+
+	function getEmployeeTokenPegging(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
+
 	}
 
 	// Monthly usd amount spent in salaries
@@ -26,29 +85,13 @@ contract Payroll is IPayroll, Ownable {
 
 	}
 
-	function availableTokensForAllocation() constant returns (address[]) {
-
-	}
-
-	function daysUntilNextAllocation() constant returns(int) {
-
-	}
-
-	/// Determines allocation of ERC20 tokens as an employee's salary.
-	///
-	/// @param tokens specifies the token addresses to be paid.
-	/// @param distributions is an array of integer percentages with a
-	/// max sum of 10000 (100.00%).
-	/// i.e. [5000, 3050, 1950] (50%, 30.50%, 19.50%)
-	function determineAllocation(address[] tokens, uint[] distributions) {
-		
-	}
-
-	function daysUntilNextPayday() constant returns(int) {
+	function escapeHatch() onlyOwner {
 
 	}
 
 	function payday() {
-
+		/*uint employeeId = employees.employeeIdsByAddress(msg.sender);
+		require(employeeId > 0);
+		var allocated = employees.getEmployeeAllocatedTokens();*/
 	}
 }
