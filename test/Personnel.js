@@ -165,6 +165,48 @@ contract('Personnel', accounts => {
 			}
 			throw new Error('Allocation was set within 6 months of previous allocation')
 		})
+
+		it('succeeds reallocation', async () => {
+			await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
+			await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
+			await exchange.setExchangeRate(tokenC.address, 6e18, { from: oracleAddress })
+			await exchange.setExchangeRate(tokenD.address, 4e4, { from: oracleAddress })
+			await controller.addEmployee(employeeAddress, 1000)
+			await controller.setEmployeeAllocation(
+				[tokenA.address, tokenB.address, tokenC.address],
+				[5000, 3000, 2000],
+				{ from: employeeAddress }
+			)
+			await controller.resetEmployeeLatestTokenAllocation(1)
+			await exchange.setExchangeRate(tokenC.address, 2e18, { from: oracleAddress })
+			await controller.setEmployeeAllocation(
+				[tokenB.address, tokenD.address],
+				[1000, 9000],
+				{ from: employeeAddress }
+			)
+			const employee = await controller.getEmployee.call(1)
+			assert.deepEqual(employee[1], [tokenB.address, tokenD.address], 'allocatedTokens do not match')
+			assert.deepEqual(employee[2], [tokenA.address, tokenB.address, tokenC.address, tokenD.address], 'peggedTokens do not match')
+			assert.notEqual(employee[3], 0, 'latestTokenAllocation timestamp should not be 0')
+
+			const tokenAAllocation = await controller.getEmployeeTokenAllocation(1, tokenA.address)
+			const tokenBAllocation = await controller.getEmployeeTokenAllocation(1, tokenB.address)
+			const tokenCAllocation = await controller.getEmployeeTokenAllocation(1, tokenC.address)
+			const tokenDAllocation = await controller.getEmployeeTokenAllocation(1, tokenD.address)
+			assert.equal(tokenAAllocation, 0);
+			assert.equal(tokenBAllocation, 1000);
+			assert.equal(tokenCAllocation, 0);
+			assert.equal(tokenDAllocation, 9000);
+
+			const tokenAPegging = await controller.getEmployeeTokenPegging(1, tokenA.address)
+			const tokenBPegging = await controller.getEmployeeTokenPegging(1, tokenB.address)
+			const tokenCPegging = await controller.getEmployeeTokenPegging(1, tokenC.address)
+			const tokenDPegging = await controller.getEmployeeTokenPegging(1, tokenD.address)
+			assert.equal(tokenAPegging, 2e18);
+			assert.equal(tokenBPegging, 2.5e18);
+			assert.equal(tokenCPegging, 6e18);
+			assert.equal(tokenDPegging, 4e4);
+		})
 	})
 
 	context('removing an employee', () => {
