@@ -2,10 +2,14 @@ pragma solidity ^0.4.11;
 
 import '../Exchange/IExchange.sol';
 import '../Zeppelin/Ownable.sol';
+import '../Zeppelin/SafeMath.sol';
 
 contract Personnel is Ownable {
+	using SafeMath for uint;
 
-	// Properties
+	//////////////////
+	/// Properties ///
+	//////////////////
 
 	IExchange public exchange;
 
@@ -14,7 +18,9 @@ contract Personnel is Ownable {
 	mapping (uint => Employee) employeesById;
 	mapping (address => uint) employeeIdsByAddress;
 
-	// Structs
+	///////////////
+	/// Structs ///
+	///////////////
 
 	struct Employee {
 		uint id;
@@ -28,7 +34,9 @@ contract Personnel is Ownable {
 		uint yearlyUSDSalary; // 18 decimals
 	}
 
-	// Modifiers
+	/////////////////
+	/// Modifiers ///
+	/////////////////
 
 	modifier validAddress(address addr) {
 		require(addr != 0x0);
@@ -40,7 +48,15 @@ contract Personnel is Ownable {
 		_;
 	}
 
-	// Functions
+	modifier onlyEmployee {
+		uint employeeId = employeeIdsByAddress[msg.sender];
+		require(employeesById[employeeId].id > 0);
+		_;
+	}
+
+	//////////////////////////
+	/// Init/set functions ///
+	//////////////////////////
 
 	function Personnel(address exchangeAddress) {
 		setExchange(exchangeAddress);
@@ -49,6 +65,10 @@ contract Personnel is Ownable {
 	function setExchange(address newExchangeAddress) onlyOwner validAddress(newExchangeAddress) {
 		exchange = IExchange(newExchangeAddress);
 	}
+
+	///////////////////////
+	/// Owner functions ///
+	///////////////////////
 
 	/// Adds a new employee.
 	///
@@ -77,47 +97,8 @@ contract Personnel is Ownable {
 		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;*/
 	}
 
-	function setEmployeeAllocation(address[] tokens, uint[] distribution) {
-		/*uint employeeId = employeeIdsByAddress[msg.sender];
-		require(employeesById[employeeId].id > 0);
-		require(tokens.length == distribution.length);
-		require(SafeMath.sub(now, employeesById[employeeId].latestTokenAllocation) >= 182 days);
-
-		// check distribution adds up to 100%
-		uint sum = 0;
-		for (uint e = 0; e < distribution.length; e++) {
-			sum += distribution[e];
-		}
-		require(sum == 10000);
-
-		// clean up old allocation
-		address[] allocatedTokens = employeesById[employeeId].allocatedTokens;
-		for (uint i = 0; i < allocatedTokens.length; i++) {
-			address allocatedToken = allocatedTokens[i];
-			delete employeesById[employeeId].tokenAllocation[allocatedToken];
-		}
-		delete employeesById[employeeId].allocatedTokens;
-
-		// set new allocation
-		for (uint o = 0; o < tokens.length; o++) {
-			address token = tokens[o];
-			employeesById[employeeId].allocatedTokens.push(token);
-			employeesById[employeeId].tokenAllocation[token] = distribution[o];
-
-			// peg new token
-			if (employeesById[employeeId].tokenPegging[token] == 0) {
-				uint tokenExchangeRate = exchange.exchangeRates(token);
-				assert(tokenExchangeRate > 0);
-				employeesById[employeeId].peggedTokens.push(token);
-				employeesById[employeeId].tokenPegging[token] = tokenExchangeRate;
-			}
-		}
-
-		employeesById[employeeId].latestTokenAllocation = now;*/
-	}
-
-	function resetEmployeeLatestTokenAllocation(uint employeeId) {
-		/*delete employeesById[employeeId].latestTokenAllocation;*/
+	function resetEmployeeLatestTokenAllocation(uint employeeId) onlyOwner validEmployeeId(employeeId) {
+		delete employeesById[employeeId].latestTokenAllocation;
 	}
 
 	function removeEmployee(uint employeeId) validEmployeeId(employeeId) {
@@ -166,25 +147,53 @@ contract Personnel is Ownable {
 		);
 	}
 
-	function allocatedTokens(uint employeeId) constant returns(address[] allocatedTokens) {
-		/*return employeesById[employeeId].allocatedTokens;*/
-	}
-
-	/*function tokenAllocation(uint employeeId, address tokenAddress) constant returns (uint) {
+	/*function getTokenAllocation(uint employeeId, address tokenAddress) constant returns (uint) {
 		return employeesById[employeeId].tokenAllocation[tokenAddress];
 	}
 
-	function tokenPegging(uint employeeId, address tokenAddress) constant returns (uint) {
+	function getTokenPegging(uint employeeId, address tokenAddress) constant returns (uint) {
 		return employeesById[employeeId].tokenPegging[tokenAddress];
 	}*/
 
-	// Monthly usd amount spent in salaries
-	function payrollBurnrate() constant returns (uint) {
+	//////////////////////////
+	/// Employee functions ///
+	//////////////////////////
 
-	}
+	function determineAllocation(address[] tokens, uint[] distribution) onlyEmployee {
+		uint employeeId = employeeIdsByAddress[msg.sender];
+		require(tokens.length == distribution.length);
+		require(now.sub(employeesById[employeeId].latestTokenAllocation) >= 182 days);
 
-	// Days until the contract can run out of funds
-	function payrollRunway() constant returns (uint) {
+		// adds up all distributions
+		uint totalDistribution = 0;
+		for (uint e = 0; e < distribution.length; e++) {
+			totalDistribution += distribution[e];
+		}
+		require(totalDistribution == 10000); // check total distribution adds up to exactly 100%
 
+		// clean up old allocation
+		address[] allocatedTokens = employeesById[employeeId].allocatedTokens;
+		for (uint i = 0; i < allocatedTokens.length; i++) {
+			address allocatedToken = allocatedTokens[i];
+			delete employeesById[employeeId].tokenAllocation[allocatedToken];
+		}
+		delete employeesById[employeeId].allocatedTokens;
+
+		// set new allocation
+		for (uint o = 0; o < tokens.length; o++) {
+			address token = tokens[o];
+			employeesById[employeeId].allocatedTokens.push(token);
+			employeesById[employeeId].tokenAllocation[token] = distribution[o];
+
+			// peg rate (new tokens only)
+			if (employeesById[employeeId].tokenPegging[token] == 0) {
+				uint tokenExchangeRate = exchange.exchangeRates(token);
+				assert(tokenExchangeRate > 0);
+				employeesById[employeeId].peggedTokens.push(token);
+				employeesById[employeeId].tokenPegging[token] = tokenExchangeRate;
+			}
+		}
+
+		employeesById[employeeId].latestTokenAllocation = now;
 	}
 }

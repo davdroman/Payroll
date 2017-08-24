@@ -71,6 +71,102 @@ contract('Personnel', accounts => {
 		})
 	})
 
+	context('determining allocation', () => {
+		it('throws when employee does not exist', async () => {
+			try {
+				await personnel.determineAllocation.call(
+					[tokenA.address, tokenB.address, tokenC.address],
+					[5000, 3000, 2000],
+					{ from: employeeAddress }
+				)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Allocation was set for inexistent employee')
+		})
+
+		it('throws when sender is owner', async () => {
+			try {
+				await personnel.determineAllocation.call(
+					[tokenA.address, tokenB.address, tokenC.address],
+					[5000, 3000, 2000]
+				)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Allocation was set by owner')
+		})
+
+		it('throws when exchange rate is not set', async () => {
+			try {
+				await personnel.determineAllocation.call(
+					[tokenA.address, tokenB.address, tokenC.address],
+					[5000, 3000, 2000],
+					{ from: employeeAddress }
+				)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Allocation was set with no exchange rates')
+		})
+
+		it('throws when distribution does not add up', async () => {
+			try {
+				await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
+				await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
+				await exchange.setExchangeRate(tokenC.address, 6e18, { from: oracleAddress })
+				await personnel.addEmployee(employeeAddress, 1000)
+				await personnel.determineAllocation.call(
+					[tokenA.address, tokenB.address, tokenC.address],
+					[2000, 3000, 2000],
+					{ from: employeeAddress }
+				)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Allocation was set with total distribution != 10000')
+		})
+
+		it('succeeds', async () => {
+			await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
+			await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
+			await exchange.setExchangeRate(tokenC.address, 6e18, { from: oracleAddress })
+			await personnel.addEmployee(employeeAddress, 1000)
+			await personnel.determineAllocation(
+				[tokenA.address, tokenB.address, tokenC.address],
+				[5000, 3000, 2000],
+				{ from: employeeAddress }
+			)
+			const employee = await personnel.getEmployee.call(1)
+			assert.deepEqual(employee[1], [tokenA.address, tokenB.address, tokenC.address], 'allocatedTokens do not match')
+			assert.deepEqual(employee[2], [tokenA.address, tokenB.address, tokenC.address], 'peggedTokens do not match')
+			assert.notEqual(employee[3], 0, 'latestTokenAllocation timestamp should not be 0')
+		})
+
+		it('throws when allocation is not due', async () => {
+			await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
+			await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
+			await exchange.setExchangeRate(tokenC.address, 6e18, { from: oracleAddress })
+			await personnel.addEmployee(employeeAddress, 1000)
+			await personnel.determineAllocation(
+				[tokenA.address, tokenB.address, tokenC.address],
+				[5000, 3000, 2000],
+				{ from: employeeAddress }
+			)
+
+			try {
+				await personnel.determineAllocation.call(
+					[tokenA.address, tokenB.address, tokenC.address],
+					[5000, 3000, 2000],
+					{ from: employeeAddress }
+				)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Allocation was set within 6 months of previous allocation')
+		})
+	})
+
 	context('removing an employee', () => {
 		it('throws when employee does not exist', async () => {
 			try {
