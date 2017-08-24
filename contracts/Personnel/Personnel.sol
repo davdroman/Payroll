@@ -1,10 +1,11 @@
 pragma solidity ^0.4.11;
 
+import '../Exchange/IPersonnel.sol';
 import '../Exchange/IExchange.sol';
 import '../Zeppelin/Ownable.sol';
 import '../Zeppelin/SafeMath.sol';
 
-contract Personnel is Ownable {
+contract Personnel is IPersonnel, Ownable {
 	using SafeMath for uint;
 
 	//////////////////
