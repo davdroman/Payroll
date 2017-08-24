@@ -66,9 +66,9 @@ contract Personnel is Ownable {
 		exchange = IExchange(newExchangeAddress);
 	}
 
-	///////////////////////
-	/// Owner functions ///
-	///////////////////////
+	/////////////////////////
+	/// Company functions ///
+	/////////////////////////
 
 	/// Adds a new employee.
 	///
