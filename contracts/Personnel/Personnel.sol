@@ -190,19 +190,27 @@ contract Personnel is IPersonnel, Ownable {
 		employeesById[employeeId].latestTokenAllocation = now;
 	}
 
-	function getAllocatedTokensCount() constant returns (uint) onlyEmployee {
+	function getAllocatedTokensCount() constant returns (uint) {
 
 	}
 
-	function getPeggedTokensCount() constant returns (uint) onlyEmployee {
+	function getAllocatedTokenAddress(uint index) returns (address) {
 
 	}
 
-	function getTokenAllocation(address tokenAddress) constant returns (uint) onlyEmployee {
+	function getAllocatedTokenValue(address tokenAddress) constant returns (uint) {
 
 	}
 
-	function getTokenPegging(address tokenAddress) constant returns (uint) onlyEmployee {
+	function getPeggedTokensCount() constant returns (uint) {
+
+	}
+
+	function getPeggedTokenAddress(uint index) returns (address) {
+
+	}
+
+	function getPeggedTokenValue(address tokenAddress) constant returns (uint) {
 
 	}
 }
