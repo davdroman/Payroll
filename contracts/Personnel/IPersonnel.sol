@@ -8,7 +8,7 @@ contract IPersonnel {
 	function resetEmployeeLatestTokenAllocation(uint employeeId);
 	function removeEmployee(uint employeeId);
 	function getEmployeeCount() constant returns (uint);
-	function getEmployeeId(address employeeAddress) returns (uint);
+	function getEmployeeId(address employeeAddress) constant returns (uint);
 	function getEmployee(uint employeeId) constant returns (
 		address accountAddress,
 		address[] allocatedTokens,

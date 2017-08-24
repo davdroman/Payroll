@@ -122,7 +122,7 @@ contract Personnel is Ownable {
 		return employeeCount;
 	}
 
-	function getEmployeeId(address employeeAddress) returns (uint) {
+	function getEmployeeId(address employeeAddress) constant returns (uint) {
 		uint employeeId = employeeIdsByAddress[employeeAddress];
 		require(employeeId > 0);
 		return employeeId;
