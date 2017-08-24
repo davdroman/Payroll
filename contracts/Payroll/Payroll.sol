@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+/*pragma solidity ^0.4.11;
 
 import './IPayroll.sol';
 import '../Personnel/PersonnelLib.sol';
@@ -90,8 +90,6 @@ contract Payroll is IPayroll, Ownable {
 	}
 
 	function payday() {
-		/*uint employeeId = employees.employeeIdsByAddress(msg.sender);
-		require(employeeId > 0);
-		var allocated = employees.getEmployeeAllocatedTokens();*/
+
 	}
-}
+}*/

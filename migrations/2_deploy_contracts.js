@@ -4,20 +4,20 @@
 // const EmployeesController = artifacts.require('EmployeesController.sol')
 // const Payroll = artifacts.require('Payroll.sol')
 
-const liveNetworks = ['kovan', 'ropsten']
-
-const PersonnelLib = artifacts.require('PersonnelLib.sol')
-const PersonnelLibMock = artifacts.require('PersonnelLibMock.sol')
+// const liveNetworks = ['kovan', 'ropsten']
+//
+// const PersonnelLib = artifacts.require('PersonnelLib.sol')
+// const PersonnelLibMock = artifacts.require('PersonnelLibMock.sol')
 
 module.exports = (deployer, network) => {
-	const isLive = liveNetworks.indexOf(network) > -1
-
-	deployer.deploy(PersonnelLib)
-
-	if (!isLive) {
-		deployer.link(PersonnelLib, PersonnelLibMock)
-		deployer.deploy(PersonnelLibMock)
-	}
+	// const isLive = liveNetworks.indexOf(network) > -1
+	//
+	// deployer.deploy(PersonnelLib)
+	//
+	// if (!isLive) {
+	// 	deployer.link(PersonnelLib, PersonnelLibMock)
+	// 	deployer.deploy(PersonnelLibMock)
+	// }
 
 	// deployer.deploy(Ownable)
 	// deployer.link(Ownable, Payroll)

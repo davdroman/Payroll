@@ -1,13 +1,20 @@
 pragma solidity ^0.4.11;
 
-// I'm *so* tempted to name this HRLib.
-library PersonnelLib {
-	struct Personnel {
-		uint employeeCount;
-		uint nextEmployeeId;
-		mapping (uint => Employee) employeesById;
-		mapping (address => uint) employeeIdsByAddress;
-	}
+import '../Exchange/IExchange.sol';
+import '../Zeppelin/Ownable.sol';
+
+contract Personnel is Ownable {
+
+	// Properties
+
+	IExchange public exchange;
+
+	uint employeeCount;
+	uint nextEmployeeId = 1;
+	mapping (uint => Employee) employeesById;
+	mapping (address => uint) employeeIdsByAddress;
+
+	// Structs
 
 	struct Employee {
 		uint id;
@@ -21,19 +28,26 @@ library PersonnelLib {
 		uint yearlyUSDSalary; // 18 decimals
 	}
 
-	modifier validEmployeeId(Personnel storage personnel, uint employeeId) {
-		require(personnel.employeeIdsByAddress[msg.sender] == 0);
+	// Modifiers
+
+	modifier validAddress(address addr) {
+		require(addr != 0x0);
 		_;
 	}
 
-	modifier validEmployeeAddress(Personnel storage personnel, address employeeAddress) {
-		uint employeeId = personnel.employeeIdsByAddress[msg.sender];
-		require(personnel.employeeIdsByAddress[msg.sender] == 0);
+	modifier validEmployeeId(uint employeeId) {
+		require(employeesById[employeeId].id > 0);
 		_;
 	}
 
-	function init(Personnel storage personnel) {
-		personnel.nextEmployeeId = 1; // id == 0 is invalid, and used to determine inexistent employees
+	// Functions
+
+	function Personnel(address exchangeAddress) {
+		setExchange(exchangeAddress);
+	}
+
+	function setExchange(address newExchangeAddress) onlyOwner validAddress(newExchangeAddress) {
+		exchange = IExchange(newExchangeAddress);
 	}
 
 	/// Adds a new employee.
@@ -43,9 +57,8 @@ library PersonnelLib {
 	/// @param initialYearlyUSDSalary the initial yearly USD salary, expressed
 	/// with 18 decimals.
 	/// i.e. $43500.32 = 4350032e16
-	function addEmployee(Personnel storage personnel, address accountAddress, uint initialYearlyUSDSalary) {
-		/*require(employeeIdsByAddress[msg.sender] == 0); // check employee doesn't already exist
-		require(accountAddress != 0x0);
+	function addEmployee(address accountAddress, uint initialYearlyUSDSalary) onlyOwner validAddress(accountAddress) {
+		require(employeeIdsByAddress[accountAddress] == 0); // check employee doesn't already exist
 		require(initialYearlyUSDSalary > 0);
 
 		employeesById[nextEmployeeId].id = nextEmployeeId;
@@ -55,7 +68,7 @@ library PersonnelLib {
 		employeeIdsByAddress[accountAddress] = nextEmployeeId;
 
 		employeeCount++;
-		nextEmployeeId++;*/
+		nextEmployeeId++;
 	}
 
 	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) {
@@ -107,9 +120,7 @@ library PersonnelLib {
 		/*delete employeesById[employeeId].latestTokenAllocation;*/
 	}
 
-	function removeEmployee(uint employeeId) {
-		/*require(employeesById[employeeId].id > 0);
-
+	function removeEmployee(uint employeeId) validEmployeeId(employeeId) {
 		delete employeesById[employeeId].id;
 		delete employeesById[employeeId].accountAddress;
 
@@ -123,11 +134,17 @@ library PersonnelLib {
 		delete employeesById[employeeId].latestTokenAllocation;
 		delete employeesById[employeeId].yearlyUSDSalary;
 
-		employeeCount--;*/
+		employeeCount--;
 	}
 
 	function getEmployeeCount() constant returns (uint) {
-		/*return employeeCount;*/
+		return employeeCount;
+	}
+
+	function getEmployeeId(address employeeAddress) returns (uint) {
+		uint employeeId = employeeIdsByAddress[employeeAddress];
+		require(employeeId > 0);
+		return employeeId;
 	}
 
 	function getEmployee(uint employeeId) constant returns (
@@ -138,7 +155,7 @@ library PersonnelLib {
 		uint latestPayday,
 		uint yearlyUSDSalary
 	) {
-		/*Employee employee = employeesById[employeeId];
+		Employee employee = employeesById[employeeId];
 		return (
 			employee.accountAddress,
 			employee.allocatedTokens,
@@ -146,7 +163,7 @@ library PersonnelLib {
 			employee.latestTokenAllocation,
 			employee.latestPayday,
 			employee.yearlyUSDSalary
-		);*/
+		);
 	}
 
 	function allocatedTokens(uint employeeId) constant returns(address[] allocatedTokens) {
@@ -162,7 +179,7 @@ library PersonnelLib {
 	}*/
 
 	// Monthly usd amount spent in salaries
-	function payrollBurnrate(Personnel storage personnel) constant returns (uint) {
+	function payrollBurnrate() constant returns (uint) {
 
 	}
 
