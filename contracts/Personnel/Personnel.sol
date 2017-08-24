@@ -26,10 +26,10 @@ contract Personnel is IPersonnel, Ownable {
 	struct Employee {
 		uint id;
 		address accountAddress;
-		address[] allocatedTokens;
-		mapping (address => uint) tokenAllocation; // parts per 10000 (100.00%)
-		address[] peggedTokens;
-		mapping (address => uint) tokenPegging; // pegged exchange rate (18 decimals)
+		address[] allocatedTokensIndex;
+		mapping (address => uint) allocatedTokens; // parts per 10000 (100.00%)
+		address[] peggedTokensIndex;
+		mapping (address => uint) peggedTokens; // pegged exchange rate (18 decimals)
 		uint latestTokenAllocation;
 		uint latestPayday;
 		uint yearlyUSDSalary; // 18 decimals
@@ -92,7 +92,7 @@ contract Personnel is IPersonnel, Ownable {
 		nextEmployeeId++;
 	}
 
-	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) {
+	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) onlyOwner {
 		/*require(employeesById[employeeId].id > 0);
 		require(newYearlyUSDSalary > 0);
 		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;*/
@@ -102,16 +102,16 @@ contract Personnel is IPersonnel, Ownable {
 		delete employeesById[employeeId].latestTokenAllocation;
 	}
 
-	function removeEmployee(uint employeeId) validEmployeeId(employeeId) {
+	function removeEmployee(uint employeeId) onlyOwner validEmployeeId(employeeId) {
 		delete employeesById[employeeId].id;
 		delete employeesById[employeeId].accountAddress;
 
-		address[] allocatedTokens = employeesById[employeeId].allocatedTokens;
-		for (uint e = 0; e < allocatedTokens.length; e++) {
-			address allocatedToken = allocatedTokens[e];
-			delete employeesById[employeeId].tokenAllocation[allocatedToken];
+		address[] allocatedTokensIndex = employeesById[employeeId].allocatedTokensIndex;
+		for (uint e = 0; e < allocatedTokensIndex.length; e++) {
+			address allocatedToken = allocatedTokensIndex[e];
+			delete employeesById[employeeId].allocatedTokens[allocatedToken];
 		}
-		delete employeesById[employeeId].allocatedTokens;
+		delete employeesById[employeeId].allocatedTokensIndex;
 
 		delete employeesById[employeeId].latestTokenAllocation;
 		delete employeesById[employeeId].yearlyUSDSalary;
@@ -119,20 +119,20 @@ contract Personnel is IPersonnel, Ownable {
 		employeeCount--;
 	}
 
-	function getEmployeeCount() constant returns (uint) {
+	function getEmployeeCount() onlyOwner constant returns (uint) {
 		return employeeCount;
 	}
 
-	function getEmployeeId(address employeeAddress) constant returns (uint) {
+	function getEmployeeId(address employeeAddress) onlyOwner constant returns (uint) {
 		uint employeeId = employeeIdsByAddress[employeeAddress];
 		require(employeeId > 0);
 		return employeeId;
 	}
 
-	function getEmployee(uint employeeId) constant returns (
+	function getEmployee(uint employeeId) onlyOwner constant returns (
 		address accountAddress,
-		address[] allocatedTokens,
-		address[] peggedTokens,
+		address[] allocatedTokensIndex,
+		address[] peggedTokensIndex,
 		uint latestTokenAllocation,
 		uint latestPayday,
 		uint yearlyUSDSalary
@@ -140,8 +140,8 @@ contract Personnel is IPersonnel, Ownable {
 		Employee employee = employeesById[employeeId];
 		return (
 			employee.accountAddress,
-			employee.allocatedTokens,
-			employee.peggedTokens,
+			employee.allocatedTokensIndex,
+			employee.peggedTokensIndex,
 			employee.latestTokenAllocation,
 			employee.latestPayday,
 			employee.yearlyUSDSalary
@@ -165,52 +165,52 @@ contract Personnel is IPersonnel, Ownable {
 		require(totalDistribution == 10000); // check total distribution adds up to exactly 100%
 
 		// clean up old allocation
-		address[] allocatedTokens = employeesById[employeeId].allocatedTokens;
-		for (uint i = 0; i < allocatedTokens.length; i++) {
-			address allocatedToken = allocatedTokens[i];
-			delete employeesById[employeeId].tokenAllocation[allocatedToken];
+		address[] allocatedTokensIndex = employeesById[employeeId].allocatedTokensIndex;
+		for (uint i = 0; i < allocatedTokensIndex.length; i++) {
+			address allocatedToken = allocatedTokensIndex[i];
+			delete employeesById[employeeId].allocatedTokens[allocatedToken];
 		}
-		delete employeesById[employeeId].allocatedTokens;
+		delete employeesById[employeeId].allocatedTokensIndex;
 
 		// set new allocation
 		for (uint o = 0; o < tokens.length; o++) {
 			address token = tokens[o];
-			employeesById[employeeId].allocatedTokens.push(token);
-			employeesById[employeeId].tokenAllocation[token] = distribution[o];
+			employeesById[employeeId].allocatedTokensIndex.push(token);
+			employeesById[employeeId].allocatedTokens[token] = distribution[o];
 
 			// peg rate (new tokens only)
-			if (employeesById[employeeId].tokenPegging[token] == 0) {
+			if (employeesById[employeeId].peggedTokens[token] == 0) {
 				uint tokenExchangeRate = exchange.exchangeRates(token);
 				assert(tokenExchangeRate > 0);
-				employeesById[employeeId].peggedTokens.push(token);
-				employeesById[employeeId].tokenPegging[token] = tokenExchangeRate;
+				employeesById[employeeId].peggedTokensIndex.push(token);
+				employeesById[employeeId].peggedTokens[token] = tokenExchangeRate;
 			}
 		}
 
 		employeesById[employeeId].latestTokenAllocation = now;
 	}
 
-	function getAllocatedTokensCount() constant returns (uint) {
-
+	function getAllocatedTokensCount() onlyEmployee constant returns (uint) {
+		return employeesById[employeeIdsByAddress[msg.sender]].allocatedTokensIndex.length;
 	}
 
-	function getAllocatedTokenAddress(uint index) returns (address) {
-
+	function getAllocatedTokenAddress(uint index) onlyEmployee returns (address) {
+		return employeesById[employeeIdsByAddress[msg.sender]].allocatedTokensIndex[index];
 	}
 
-	function getAllocatedTokenValue(address tokenAddress) constant returns (uint) {
-
+	function getAllocatedTokenValue(address tokenAddress) onlyEmployee validAddress(tokenAddress) constant returns (uint) {
+		return employeesById[employeeIdsByAddress[msg.sender]].allocatedTokens[tokenAddress];
 	}
 
-	function getPeggedTokensCount() constant returns (uint) {
-
+	function getPeggedTokensCount() onlyEmployee constant returns (uint) {
+		return employeesById[employeeIdsByAddress[msg.sender]].peggedTokensIndex.length;
 	}
 
-	function getPeggedTokenAddress(uint index) returns (address) {
-
+	function getPeggedTokenAddress(uint index) onlyEmployee returns (address) {
+		return employeesById[employeeIdsByAddress[msg.sender]].peggedTokensIndex[index];
 	}
 
-	function getPeggedTokenValue(address tokenAddress) constant returns (uint) {
-
+	function getPeggedTokenValue(address tokenAddress) onlyEmployee validAddress(tokenAddress) constant returns (uint) {
+		return employeesById[employeeIdsByAddress[msg.sender]].peggedTokens[tokenAddress];
 	}
 }

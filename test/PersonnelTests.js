@@ -189,19 +189,19 @@ contract('Personnel', accounts => {
 			assert.deepEqual(employee[2], [tokenA.address, tokenB.address, tokenC.address, tokenD.address], 'peggedTokens do not match')
 			assert.notEqual(employee[3], 0, 'latestTokenAllocation timestamp should not be 0')
 
-			const tokenAAllocation = await personnel.getEmployeeTokenAllocation(1, tokenA.address)
-			const tokenBAllocation = await personnel.getEmployeeTokenAllocation(1, tokenB.address)
-			const tokenCAllocation = await personnel.getEmployeeTokenAllocation(1, tokenC.address)
-			const tokenDAllocation = await personnel.getEmployeeTokenAllocation(1, tokenD.address)
+			const tokenAAllocation = await personnel.getAllocatedTokenValue(tokenA.address, { from: employeeAddress })
+			const tokenBAllocation = await personnel.getAllocatedTokenValue(tokenB.address, { from: employeeAddress })
+			const tokenCAllocation = await personnel.getAllocatedTokenValue(tokenC.address, { from: employeeAddress })
+			const tokenDAllocation = await personnel.getAllocatedTokenValue(tokenD.address, { from: employeeAddress })
 			assert.equal(tokenAAllocation, 0);
 			assert.equal(tokenBAllocation, 1000);
 			assert.equal(tokenCAllocation, 0);
 			assert.equal(tokenDAllocation, 9000);
 
-			const tokenAPegging = await personnel.getEmployeeTokenPegging(1, tokenA.address)
-			const tokenBPegging = await personnel.getEmployeeTokenPegging(1, tokenB.address)
-			const tokenCPegging = await personnel.getEmployeeTokenPegging(1, tokenC.address)
-			const tokenDPegging = await personnel.getEmployeeTokenPegging(1, tokenD.address)
+			const tokenAPegging = await personnel.getPeggedTokenValue(tokenA.address, { from: employeeAddress })
+			const tokenBPegging = await personnel.getPeggedTokenValue(tokenB.address, { from: employeeAddress })
+			const tokenCPegging = await personnel.getPeggedTokenValue(tokenC.address, { from: employeeAddress })
+			const tokenDPegging = await personnel.getPeggedTokenValue(tokenD.address, { from: employeeAddress })
 			assert.equal(tokenAPegging, 2e18);
 			assert.equal(tokenBPegging, 2.5e18);
 			assert.equal(tokenCPegging, 6e18);
