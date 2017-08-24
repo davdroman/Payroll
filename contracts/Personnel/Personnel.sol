@@ -147,14 +147,6 @@ contract Personnel is Ownable {
 		);
 	}
 
-	/*function getTokenAllocation(uint employeeId, address tokenAddress) constant returns (uint) {
-		return employeesById[employeeId].tokenAllocation[tokenAddress];
-	}
-
-	function getTokenPegging(uint employeeId, address tokenAddress) constant returns (uint) {
-		return employeesById[employeeId].tokenPegging[tokenAddress];
-	}*/
-
 	//////////////////////////
 	/// Employee functions ///
 	//////////////////////////
@@ -195,5 +187,21 @@ contract Personnel is Ownable {
 		}
 
 		employeesById[employeeId].latestTokenAllocation = now;
+	}
+
+	function getAllocatedTokensCount() constant returns (uint) onlyEmployee {
+
+	}
+
+	function getPeggedTokensCount() constant returns (uint) onlyEmployee {
+
+	}
+
+	function getTokenAllocation(address tokenAddress) constant returns (uint) onlyEmployee {
+
+	}
+
+	function getTokenPegging(address tokenAddress) constant returns (uint) onlyEmployee {
+
 	}
 }

@@ -20,4 +20,8 @@ contract IPersonnel {
 
 	// Employee-only
 	function determineAllocation(address[] tokens, uint[] distribution);
+	function getAllocatedTokensCount() constant returns (uint);
+	function getPeggedTokensCount() constant returns (uint);
+	function getTokenAllocation(address tokenAddress) constant returns (uint);
+	function getTokenPegging(address tokenAddress) constant returns (uint);
 }
