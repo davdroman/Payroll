@@ -6,6 +6,8 @@ import '../Tokens/IERC20Token.sol';
 import './IExchange.sol';
 
 contract USDExchange is Ownable, IExchange {
+	using SafeMath for uint;
+
 	address public exchangeRateOracle;
 	address[] public availableTokens;
 	mapping (address => uint) public exchangeRates; // 18 decimals
@@ -25,7 +27,7 @@ contract USDExchange is Ownable, IExchange {
 		require(rate > 0);
 
 		uint decimals = IERC20Token(token).decimals();
-		return SafeMath.div(SafeMath.mul(amount, 10**decimals), rate);
+		return amount.mul(10**decimals).div(rate);
 	}
 
 	function getAvailableTokens() constant returns(address[]) {
