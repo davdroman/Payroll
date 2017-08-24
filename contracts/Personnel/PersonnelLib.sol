@@ -21,6 +21,17 @@ library PersonnelLib {
 		uint yearlyUSDSalary; // 18 decimals
 	}
 
+	modifier validEmployeeId(Personnel storage personnel, uint employeeId) {
+		require(personnel.employeeIdsByAddress[msg.sender] == 0);
+		_;
+	}
+
+	modifier validEmployeeAddress(Personnel storage personnel, address employeeAddress) {
+		uint employeeId = personnel.employeeIdsByAddress[msg.sender];
+		require(personnel.employeeIdsByAddress[msg.sender] == 0);
+		_;
+	}
+
 	function init(Personnel storage personnel) {
 		personnel.nextEmployeeId = 1; // id == 0 is invalid, and used to determine inexistent employees
 	}
