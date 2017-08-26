@@ -30,6 +30,8 @@ contract Personnel is IPersonnel, Ownable {
 		mapping (address => uint) allocatedTokens; // parts per 10000 (100.00%)
 		address[] peggedTokensIndex;
 		mapping (address => uint) peggedTokens; // pegged exchange rate (18 decimals)
+		address[] salaryTokensIndex;
+		mapping (address => uint) salaryTokens; // calculated salary value from allocation, pegging, and USD salary
 		uint latestTokenAllocation;
 		uint latestPayday;
 		uint yearlyUSDSalary; // 18 decimals
@@ -212,5 +214,17 @@ contract Personnel is IPersonnel, Ownable {
 
 	function getPeggedTokenValue(address tokenAddress) onlyEmployee validAddress(tokenAddress) constant returns (uint) {
 		return employeesById[employeeIdsByAddress[msg.sender]].peggedTokens[tokenAddress];
+	}
+
+	function getSalaryTokensCount() onlyEmployee constant returns (uint) {
+		return employeesById[employeeIdsByAddress[msg.sender]].salaryTokensIndex.length;
+	}
+
+	function getSalaryTokenAddress(uint index) onlyEmployee returns (address) {
+		return employeesById[employeeIdsByAddress[msg.sender]].salaryTokensIndex[index];
+	}
+
+	function getSalaryTokenValue(address tokenAddress) onlyEmployee validAddress(tokenAddress) constant returns (uint) {
+		return employeesById[employeeIdsByAddress[msg.sender]].salaryTokens[tokenAddress];
 	}
 }

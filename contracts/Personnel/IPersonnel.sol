@@ -27,4 +27,8 @@ contract IPersonnel {
 	function getPeggedTokensCount() constant returns (uint);
 	function getPeggedTokenAddress(uint index) returns (address);
 	function getPeggedTokenValue(address tokenAddress) constant returns (uint);
+
+	function getSalaryTokensCount() constant returns (uint);
+	function getSalaryTokenAddress(uint index) returns (address);
+	function getSalaryTokenValue(address tokenAddress) constant returns (uint);
 }
