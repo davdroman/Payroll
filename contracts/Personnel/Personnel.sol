@@ -168,14 +168,12 @@ contract Personnel is IPersonnel, Ownable {
 		uint yearlyUSDSalary
 	) {
 		Employee employee = employeesById[employeeId];
-		return (
-			employee.accountAddress,
-			employee.allocatedTokensIndex,
-			employee.peggedTokensIndex,
-			employee.latestTokenAllocation,
-			employee.latestPayday,
-			employee.yearlyUSDSalary
-		);
+		accountAddress = employee.accountAddress;
+		allocatedTokensIndex = employee.allocatedTokensIndex;
+		peggedTokensIndex = employee.peggedTokensIndex;
+		latestTokenAllocation = employee.latestTokenAllocation;
+		latestPayday = employee.latestPayday;
+		yearlyUSDSalary = employee.yearlyUSDSalary;
 	}
 
 	//////////////////////////
