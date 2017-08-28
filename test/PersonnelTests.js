@@ -240,6 +240,67 @@ contract('Personnel', accounts => {
 		})
 	})
 
+	context('setting an employee salary', () => {
+		it('throws when employee does not exist', async () => {
+			try {
+				await personnel.setEmployeeSalary.call(1, 36000e18)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Inexistent employee was assigned a salary')
+		})
+
+		it('throws when salary is zero', async () => {
+			await addEmployee()
+
+			try {
+				await personnel.setEmployeeSalary.call(1, 0)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee salary was set to zero')
+		})
+
+		it('throws when sender is not the owner', async () => {
+			await addEmployee()
+
+			try {
+				await personnel.setEmployeeSalary.call(1, 36000e18, { from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee salary was set by other than owner')
+		})
+
+		it('succeeds', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+			await personnel.setEmployeeSalary(1, 36000e18)
+
+			const tokenAAllocation = await personnel.getAllocatedTokenValue(tokenA.address, { from: employeeAddress })
+			const tokenBAllocation = await personnel.getAllocatedTokenValue(tokenB.address, { from: employeeAddress })
+			const tokenCAllocation = await personnel.getAllocatedTokenValue(tokenC.address, { from: employeeAddress })
+			assert.equal(tokenAAllocation, 5000);
+			assert.equal(tokenBAllocation, 3000);
+			assert.equal(tokenCAllocation, 2000);
+
+			const tokenAPegging = await personnel.getPeggedTokenValue(tokenA.address, { from: employeeAddress })
+			const tokenBPegging = await personnel.getPeggedTokenValue(tokenB.address, { from: employeeAddress })
+			const tokenCPegging = await personnel.getPeggedTokenValue(tokenC.address, { from: employeeAddress })
+			assert.equal(tokenAPegging, 2e18);
+			assert.equal(tokenBPegging, 2.5e18);
+			assert.equal(tokenCPegging, 6e18);
+
+			const salaryTokenAValue = await personnel.getSalaryTokenValue.call(tokenA.address, { from: employeeAddress })
+			const salaryTokenBValue = await personnel.getSalaryTokenValue.call(tokenB.address, { from: employeeAddress })
+			const salaryTokenCValue = await personnel.getSalaryTokenValue.call(tokenC.address, { from: employeeAddress })
+			assert.equal(salaryTokenAValue, 750e18, '')
+			assert.equal(salaryTokenBValue, 360e7, '')
+			assert.equal(salaryTokenCValue, 100, '')
+		})
+	})
+
 	context('removing an employee', () => {
 		it('throws when employee does not exist', async () => {
 			await addEmployee()
