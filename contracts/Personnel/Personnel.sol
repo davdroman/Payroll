@@ -183,44 +183,41 @@ contract Personnel is IPersonnel, Ownable {
 	//////////////////////////
 
 	function determineAllocation(address[] tokens, uint[] distribution) onlyEmployee {
-		uint employeeId = employeeIdsByAddress[msg.sender];
 		require(tokens.length == distribution.length);
-		require(now.sub(employeesById[employeeId].latestTokenAllocation) >= 182 days);
 
-		// adds up all distributions
 		uint totalDistribution = 0;
-		for (uint e = 0; e < distribution.length; e++) {
-			totalDistribution += distribution[e];
-		}
+		for (uint d = 0; d < distribution.length; d++) { totalDistribution += distribution[d]; }
 		require(totalDistribution == 10000); // check total distribution adds up to exactly 100%
 
+		Employee employee = employeesById[employeeIdsByAddress[msg.sender]];
+		assert(now.sub(employee.latestTokenAllocation) >= 182 days); // check latest reallocation was > 6 months ago
+
 		// clean up old allocation
-		address[] allocatedTokensIndex = employeesById[employeeId].allocatedTokensIndex;
-		for (uint i = 0; i < allocatedTokensIndex.length; i++) {
-			address allocatedToken = allocatedTokensIndex[i];
-			delete employeesById[employeeId].allocatedTokens[allocatedToken];
-			delete employeesById[employeeId].salaryTokens[allocatedToken];
+		for (uint a = 0; a < employee.allocatedTokensIndex.length; a++) {
+			address allocatedToken = employee.allocatedTokensIndex[a];
+			delete employee.allocatedTokens[allocatedToken];
+			delete employee.salaryTokens[allocatedToken];
 		}
-		delete employeesById[employeeId].allocatedTokensIndex;
+		delete employee.allocatedTokensIndex;
 
 		// set new allocation
-		for (uint o = 0; o < tokens.length; o++) {
-			address token = tokens[o];
-			employeesById[employeeId].allocatedTokensIndex.push(token);
-			employeesById[employeeId].allocatedTokens[token] = distribution[o];
+		for (uint t = 0; t < tokens.length; t++) {
+			address token = tokens[t];
+			employee.allocatedTokensIndex.push(token);
+			employee.allocatedTokens[token] = distribution[t];
 
 			// peg rate (new tokens only)
-			if (employeesById[employeeId].peggedTokens[token] == 0) {
+			if (employee.peggedTokens[token] == 0) {
 				uint tokenExchangeRate = exchange.exchangeRates(token);
 				assert(tokenExchangeRate > 0);
-				employeesById[employeeId].peggedTokensIndex.push(token);
-				employeesById[employeeId].peggedTokens[token] = tokenExchangeRate;
+				employee.peggedTokensIndex.push(token);
+				employee.peggedTokens[token] = tokenExchangeRate;
 			}
 		}
 
-		recalculateSalaryTokens(employeeId);
+		recalculateSalaryTokens(employee.id);
 
-		employeesById[employeeId].latestTokenAllocation = now;
+		employee.latestTokenAllocation = now;
 	}
 
 	function getAllocatedTokensCount() onlyEmployee constant returns (uint) {
