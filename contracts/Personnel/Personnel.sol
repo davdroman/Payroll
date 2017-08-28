@@ -124,23 +124,27 @@ contract Personnel is IPersonnel, Ownable {
 		}
 	}
 
-	function resetEmployeeLatestTokenAllocation(uint employeeId) onlyOwner validEmployeeId(employeeId) {
-		delete employeesById[employeeId].latestTokenAllocation;
-	}
-
 	function removeEmployee(uint employeeId) onlyOwner validEmployeeId(employeeId) {
-		delete employeesById[employeeId].id;
-		delete employeesById[employeeId].accountAddress;
+		Employee employee = employeesById[employeeId];
 
-		address[] allocatedTokensIndex = employeesById[employeeId].allocatedTokensIndex;
-		for (uint e = 0; e < allocatedTokensIndex.length; e++) {
-			address allocatedToken = allocatedTokensIndex[e];
-			delete employeesById[employeeId].allocatedTokens[allocatedToken];
+		for (uint a = 0; a < employee.allocatedTokensIndex.length; a++) {
+			delete employee.allocatedTokens[employee.allocatedTokensIndex[a]];
+			delete employee.salaryTokens[employee.allocatedTokensIndex[a]];
 		}
-		delete employeesById[employeeId].allocatedTokensIndex;
 
-		delete employeesById[employeeId].latestTokenAllocation;
-		delete employeesById[employeeId].yearlyUSDSalary;
+		for (uint p = 0; p < employee.peggedTokensIndex.length; p++) {
+			delete employee.peggedTokens[employee.peggedTokensIndex[p]];
+		}
+
+		delete employeeIdsByAddress[employee.accountAddress];
+
+		delete employee.id;
+		delete employee.accountAddress;
+		delete employee.allocatedTokensIndex;
+		delete employee.peggedTokensIndex;
+		delete employee.latestTokenAllocation;
+		delete employee.latestPayday;
+		delete employee.yearlyUSDSalary;
 
 		employeeCount--;
 	}

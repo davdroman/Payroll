@@ -4,7 +4,6 @@ contract IPersonnel {
 	// Company-only
 	function addEmployee(address accountAddress, uint initialYearlyUSDSalary);
 	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary);
-	function resetEmployeeLatestTokenAllocation(uint employeeId);
 	function removeEmployee(uint employeeId);
 	function getEmployeeCount() constant returns (uint);
 	function getEmployeeId(address employeeAddress) constant returns (uint);
