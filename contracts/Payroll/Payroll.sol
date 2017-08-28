@@ -1,78 +1,37 @@
-/*pragma solidity ^0.4.11;
+pragma solidity ^0.4.11;
 
 import './IPayroll.sol';
-import '../Personnel/PersonnelLib.sol';
-import '../Exchange/USDExchange.sol';
-import '../Zeppelin/SafeMath.sol';
+import '../Personnel/IPersonnel.sol';
 import '../Zeppelin/Ownable.sol';
+import '../Zeppelin/SafeMath.sol';
 
 contract Payroll is IPayroll, Ownable {
-	using PersonnelLib for PersonnelLib.Personnel;
 
-	PersonnelLib.Personnel public personnel;
-	USDExchange public exchange;
+	//////////////////
+	/// Properties ///
+	//////////////////
 
-	function Payroll(address initialExchange) {
-		setExchange(initialExchange);
+	IPersonnel public personnel;
+
+	/////////////////
+	/// Modifiers ///
+	/////////////////
+
+	modifier validAddress(address addr) {
+		require(addr != 0x0);
+		_;
 	}
 
-	function setExchange(address newExchange) onlyOwner {
-		require(newExchange != 0x0);
-		exchange = USDExchange(newExchange);
+	//////////////////////////
+	/// Init/set functions ///
+	//////////////////////////
+
+	function Payroll(address initialPersonnel) {
+		setExchange(initialPersonnel);
 	}
 
-	/// Adds a new employee.
-	///
-	/// @param accountAddress the initial address for the employee to receive
-	/// their salary.
-	/// @param initialYearlyUSDSalary the initial yearly USD salary, expressed
-	/// with 18 decimals.
-	/// i.e. $43500.32 = 4350032e16
-	function addEmployee(address accountAddress, uint initialYearlyUSDSalary) onlyOwner {
-
-	}
-
-	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) onlyOwner {
-
-	}
-
-	function setEmployeeAllocation(address[] tokens, uint[] distribution) notOwner external {
-
-	}
-
-	function resetEmployeeLatestTokenAllocation(uint employeeId) onlyOwner {
-
-	}
-
-	function removeEmployee(uint employeeId) onlyOwner {
-
-	}
-
-	function getEmployeeCount() constant onlyOwner returns (uint) {
-
-	}
-
-	function getEmployee(uint employeeId) constant onlyOwner returns (
-		address accountAddress,
-		address[] allocatedTokens,
-		address[] peggedTokens,
-		uint latestTokenAllocation,
-		uint latestPayday,
-		uint yearlyUSDSalary
-	) {
-
-	}
-
-	function getEmployeeAllocatedTokens(uint employeeId) constant returns(address[] allocatedTokens) {
-
-	}
-
-	function getEmployeeTokenAllocation(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
-
-	}
-
-	function getEmployeeTokenPegging(uint employeeId, address tokenAddress) constant onlyOwner returns (uint) {
-
+	function setExchange(address newPersonnel) onlyOwner validAddress(newPersonnel) {
+		personnel = IPersonnel(newPersonnel);
 	}
 
 	// Monthly usd amount spent in salaries
@@ -92,4 +51,4 @@ contract Payroll is IPayroll, Ownable {
 	function payday() {
 
 	}
-}*/
+}

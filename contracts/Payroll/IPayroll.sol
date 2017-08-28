@@ -1,11 +1,11 @@
 pragma solidity ^0.4.11;
 
 contract IPayroll {
-	// company
+	// Company-only
 	function calculatePayrollBurnrate() constant returns (uint);
 	function calculatePayrollRunway() constant returns (uint);
 	function escapeHatch();
 
-	// employee
+	// Employee-only
 	function payday();
 }
