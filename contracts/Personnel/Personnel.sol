@@ -30,8 +30,7 @@ contract Personnel is IPersonnel, Ownable {
 		mapping (address => uint) allocatedTokens; // parts per 10000 (100.00%)
 		address[] peggedTokensIndex;
 		mapping (address => uint) peggedTokens; // pegged exchange rate (18 decimals)
-		address[] salaryTokensIndex;
-		mapping (address => uint) salaryTokens; // calculated salary value from allocation, pegging, and USD salary
+		mapping (address => uint) salaryTokens; // calculated monthly salary from allocation, pegging, and yearly USD salary
 		uint latestTokenAllocation;
 		uint latestPayday;
 		uint yearlyUSDSalary; // 18 decimals
@@ -94,10 +93,35 @@ contract Personnel is IPersonnel, Ownable {
 		nextEmployeeId++;
 	}
 
-	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) onlyOwner {
-		/*require(employeesById[employeeId].id > 0);
+	function setEmployeeSalary(uint employeeId, uint newYearlyUSDSalary) onlyOwner validEmployeeId(employeeId) {
 		require(newYearlyUSDSalary > 0);
-		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;*/
+		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;
+		recalculateSalaryTokens(employeeId);
+	}
+
+	function recalculateSalaryTokens(uint employeeId) private {
+		Employee employee = employeesById[employeeId];
+
+		// calculate new salary
+		for (uint i = 0; i < employee.allocatedTokensIndex.length; i++) {
+			// fetch info to calculate token salary
+			address allocatedToken = employee.allocatedTokensIndex[i];
+			uint allocation = employee.allocatedTokens[allocatedToken];
+			uint peggedRate = employee.peggedTokens[allocatedToken];
+
+			// assert validity
+			assert(allocatedToken != 0x0);
+			assert(allocation > 0);
+			assert(peggedRate > 0);
+
+			// calculate monthly salary
+			uint monthlyUSDSalary = employee.yearlyUSDSalary.div(12);
+			uint monthlyUSDSalaryAllocation = monthlyUSDSalary.mul(allocation).div(10000);
+			uint monthlySalaryTokens = exchange.exchange(allocatedToken, monthlyUSDSalaryAllocation, peggedRate);
+
+			// assign salary tokens
+			employee.salaryTokens[allocatedToken] = monthlySalaryTokens;
+		}
 	}
 
 	function resetEmployeeLatestTokenAllocation(uint employeeId) onlyOwner validEmployeeId(employeeId) {
@@ -171,6 +195,7 @@ contract Personnel is IPersonnel, Ownable {
 		for (uint i = 0; i < allocatedTokensIndex.length; i++) {
 			address allocatedToken = allocatedTokensIndex[i];
 			delete employeesById[employeeId].allocatedTokens[allocatedToken];
+			delete employeesById[employeeId].salaryTokens[allocatedToken];
 		}
 		delete employeesById[employeeId].allocatedTokensIndex;
 
@@ -188,6 +213,8 @@ contract Personnel is IPersonnel, Ownable {
 				employeesById[employeeId].peggedTokens[token] = tokenExchangeRate;
 			}
 		}
+
+		recalculateSalaryTokens(employeeId);
 
 		employeesById[employeeId].latestTokenAllocation = now;
 	}
@@ -214,14 +241,6 @@ contract Personnel is IPersonnel, Ownable {
 
 	function getPeggedTokenValue(address tokenAddress) onlyEmployee validAddress(tokenAddress) constant returns (uint) {
 		return employeesById[employeeIdsByAddress[msg.sender]].peggedTokens[tokenAddress];
-	}
-
-	function getSalaryTokensCount() onlyEmployee constant returns (uint) {
-		return employeesById[employeeIdsByAddress[msg.sender]].salaryTokensIndex.length;
-	}
-
-	function getSalaryTokenAddress(uint index) onlyEmployee returns (address) {
-		return employeesById[employeeIdsByAddress[msg.sender]].salaryTokensIndex[index];
 	}
 
 	function getSalaryTokenValue(address tokenAddress) onlyEmployee validAddress(tokenAddress) constant returns (uint) {

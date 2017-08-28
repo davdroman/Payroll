@@ -8,7 +8,6 @@ contract('Personnel', accounts => {
 	let tokenB
 	let tokenC
 	let tokenD
-
 	let exchange
 	let personnel
 
@@ -17,14 +16,26 @@ contract('Personnel', accounts => {
 	const employeeAddress = accounts[1]
 	const oracleAddress = accounts[2]
 
-	before(async () => {
+	const setExchangeRates = async () => {
+		await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
+		await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
+		await exchange.setExchangeRate(tokenC.address, 6e18, { from: oracleAddress })
+		await exchange.setExchangeRate(tokenD.address, 4e18, { from: oracleAddress })
+	}
+
+	const determineAllocation = async () => {
+		await personnel.determineAllocation(
+			[tokenA.address, tokenB.address, tokenC.address],
+			[5000, 3000, 2000],
+			{ from: employeeAddress }
+		)
+	}
+
+	beforeEach(async () => {
 		tokenA = await ERC20Token.new('Test Token A', 'TTA', 18)
 		tokenB = await ERC20Token.new('Test Token B', 'TTB', 7)
 		tokenC = await ERC20Token.new('Test Token C', 'TTC', 0)
 		tokenD = await ERC20Token.new('Test Token D', 'TTD', 4)
-	})
-
-	beforeEach(async () => {
 		exchange = await USDExchange.new(oracleAddress)
 		personnel = await Personnel.new(exchange.address)
 	})
@@ -32,7 +43,7 @@ contract('Personnel', accounts => {
 	context('adding new employee', () => {
 		it('throws when address is invalid', async () => {
 			try {
-				await personnel.addEmployee.call('0x0', 1000)
+				await personnel.addEmployee.call(EMPTY_ADDRESS, 1000)
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -68,6 +79,16 @@ contract('Personnel', accounts => {
 			assert.equal(employee[3], 0, 'latestTokenAllocation timestamp should be 0')
 			assert.equal(employee[4], 0, 'latestPayday timestamp should be 0')
 			assert.equal(employee[5], 1000, 'yearlyUSDSalary should be 1000')
+		})
+
+		it('throws when adding employee with the same address', async () => {
+			try {
+				await personnel.addEmployee(employeeAddress, 1000)
+				await personnel.addEmployee(employeeAddress, 1200)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee was added by other than owner')
 		})
 	})
 
@@ -112,9 +133,7 @@ contract('Personnel', accounts => {
 
 		it('throws when distribution does not add up', async () => {
 			try {
-				await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
-				await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
-				await exchange.setExchangeRate(tokenC.address, 6e18, { from: oracleAddress })
+				await setExchangeRates()
 				await personnel.addEmployee(employeeAddress, 1000)
 				await personnel.determineAllocation.call(
 					[tokenA.address, tokenB.address, tokenC.address],
@@ -128,10 +147,8 @@ contract('Personnel', accounts => {
 		})
 
 		it('succeeds', async () => {
-			await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
-			await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
-			await exchange.setExchangeRate(tokenC.address, 6e18, { from: oracleAddress })
-			await personnel.addEmployee(employeeAddress, 1000)
+			await setExchangeRates()
+			await personnel.addEmployee(employeeAddress, 24000e18)
 			await personnel.determineAllocation(
 				[tokenA.address, tokenB.address, tokenC.address],
 				[5000, 3000, 2000],
@@ -141,12 +158,17 @@ contract('Personnel', accounts => {
 			assert.deepEqual(employee[1], [tokenA.address, tokenB.address, tokenC.address], 'allocatedTokens do not match')
 			assert.deepEqual(employee[2], [tokenA.address, tokenB.address, tokenC.address], 'peggedTokens do not match')
 			assert.notEqual(employee[3], 0, 'latestTokenAllocation timestamp should not be 0')
+
+			const salaryTokenAValue = await personnel.getSalaryTokenValue.call(tokenA.address, { from: employeeAddress })
+			const salaryTokenBValue = await personnel.getSalaryTokenValue.call(tokenB.address, { from: employeeAddress })
+			const salaryTokenCValue = await personnel.getSalaryTokenValue.call(tokenC.address, { from: employeeAddress })
+			assert.equal(salaryTokenAValue, 500e18, '')
+			assert.equal(salaryTokenBValue, 240e7, '')
+			assert.equal(salaryTokenCValue, 66, '')
 		})
 
 		it('throws when allocation is not due', async () => {
-			await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
-			await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
-			await exchange.setExchangeRate(tokenC.address, 6e18, { from: oracleAddress })
+			await setExchangeRates()
 			await personnel.addEmployee(employeeAddress, 1000)
 			await personnel.determineAllocation(
 				[tokenA.address, tokenB.address, tokenC.address],
@@ -167,11 +189,8 @@ contract('Personnel', accounts => {
 		})
 
 		it('succeeds reallocation', async () => {
-			await exchange.setExchangeRate(tokenA.address, 2e18, { from: oracleAddress })
-			await exchange.setExchangeRate(tokenB.address, 2.5e18, { from: oracleAddress })
-			await exchange.setExchangeRate(tokenC.address, 6e18, { from: oracleAddress })
-			await exchange.setExchangeRate(tokenD.address, 4e4, { from: oracleAddress })
-			await personnel.addEmployee(employeeAddress, 1000)
+			await setExchangeRates()
+			await personnel.addEmployee(employeeAddress, 24000e18)
 			await personnel.determineAllocation(
 				[tokenA.address, tokenB.address, tokenC.address],
 				[5000, 3000, 2000],
@@ -205,10 +224,20 @@ contract('Personnel', accounts => {
 			assert.equal(tokenAPegging, 2e18);
 			assert.equal(tokenBPegging, 2.5e18);
 			assert.equal(tokenCPegging, 6e18);
-			assert.equal(tokenDPegging, 4e4);
+			assert.equal(tokenDPegging, 4e18);
+
+			const tokenASalary = await personnel.getSalaryTokenValue(tokenA.address, { from: employeeAddress })
+			const tokenBSalary = await personnel.getSalaryTokenValue(tokenB.address, { from: employeeAddress })
+			const tokenCSalary = await personnel.getSalaryTokenValue(tokenC.address, { from: employeeAddress })
+			const tokenDSalary = await personnel.getSalaryTokenValue(tokenD.address, { from: employeeAddress })
+			assert.equal(tokenASalary, 0);
+			assert.equal(tokenBSalary, 80e7);
+			assert.equal(tokenCSalary, 0);
+			assert.equal(tokenDSalary, 450e4);
 		})
 	})
 
+	/*
 	context('removing an employee', () => {
 		it('throws when employee does not exist', async () => {
 			try {
@@ -239,9 +268,11 @@ contract('Personnel', accounts => {
 			assert.equal(employee[0], EMPTY_ADDRESS, 'employeeAddress should be empty')
 			assert.equal(employee[1].length, 0, 'allocatedTokens should be empty')
 			assert.equal(employee[2].length, 0, 'peggedTokens should be empty')
-			assert.equal(employee[3], 0, 'latestTokenAllocation timestamp should be 0')
-			assert.equal(employee[4], 0, 'latestPayday timestamp should be 0')
-			assert.equal(employee[5], 0, 'yearlyUSDSalary should be 1000')
+			assert.equal(employee[3].length, 0, 'salaryTokens should be empty')
+			assert.equal(employee[4], 0, 'latestTokenAllocation timestamp should be 0')
+			assert.equal(employee[5], 0, 'latestPayday timestamp should be 0')
+			assert.equal(employee[6], 0, 'yearlyUSDSalary should be 1000')
 		})
 	})
+	*/
 })

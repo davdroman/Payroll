@@ -10,8 +10,8 @@ contract IPersonnel {
 	function getEmployeeId(address employeeAddress) constant returns (uint);
 	function getEmployee(uint employeeId) constant returns (
 		address accountAddress,
-		address[] allocatedTokens,
-		address[] peggedTokens,
+		address[] allocatedTokensIndex,
+		address[] peggedTokensIndex,
 		uint latestTokenAllocation,
 		uint latestPayday,
 		uint yearlyUSDSalary
@@ -19,6 +19,7 @@ contract IPersonnel {
 
 	// Employee-only
 	function determineAllocation(address[] tokens, uint[] distribution);
+	function getSalaryTokenValue(address tokenAddress) constant returns (uint);
 
 	function getAllocatedTokensCount() constant returns (uint);
 	function getAllocatedTokenAddress(uint index) returns (address);
@@ -27,8 +28,4 @@ contract IPersonnel {
 	function getPeggedTokensCount() constant returns (uint);
 	function getPeggedTokenAddress(uint index) returns (address);
 	function getPeggedTokenValue(address tokenAddress) constant returns (uint);
-
-	function getSalaryTokensCount() constant returns (uint);
-	function getSalaryTokenAddress(uint index) returns (address);
-	function getSalaryTokenValue(address tokenAddress) constant returns (uint);
 }
