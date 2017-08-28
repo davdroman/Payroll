@@ -182,6 +182,12 @@ contract Personnel is IPersonnel, Ownable {
 	/// Employee functions ///
 	//////////////////////////
 
+	/// Determines allocation of ERC20 tokens as an employee's salary.
+	///
+	/// @param tokens specifies the ERC20 token addresses.
+	/// @param distribution is an array of percentages expressed as integers
+	/// with a max sum of 10000 (100.00%)
+	/// i.e. [5000, 3000, 2000]
 	function determineAllocation(address[] tokens, uint[] distribution) onlyEmployee {
 		require(tokens.length == distribution.length);
 
