@@ -31,6 +31,10 @@ contract('Personnel', accounts => {
 		)
 	}
 
+	const addEmployee = async () => {
+		await personnel.addEmployee(employeeAddress, 24000e18)
+	}
+
 	beforeEach(async () => {
 		tokenA = await ERC20Token.new('Test Token A', 'TTA', 18)
 		tokenB = await ERC20Token.new('Test Token B', 'TTB', 7)
@@ -69,7 +73,7 @@ contract('Personnel', accounts => {
 		})
 
 		it('succeeds', async () => {
-			await personnel.addEmployee(employeeAddress, 1000)
+			await addEmployee()
 			const employeeCount = await personnel.getEmployeeCount.call()
 			const employee = await personnel.getEmployee.call(1)
 			assert.equal(employeeCount, 1, 'employeeCount should be 1')
@@ -78,13 +82,13 @@ contract('Personnel', accounts => {
 			assert.equal(employee[2].length, 0, 'peggedTokens should be empty')
 			assert.equal(employee[3], 0, 'latestTokenAllocation timestamp should be 0')
 			assert.equal(employee[4], 0, 'latestPayday timestamp should be 0')
-			assert.equal(employee[5], 1000, 'yearlyUSDSalary should be 1000')
+			assert.equal(employee[5], 24000e18, 'yearlyUSDSalary should be 1000')
 		})
 
 		it('throws when adding employee with the same address', async () => {
 			try {
-				await personnel.addEmployee(employeeAddress, 1000)
-				await personnel.addEmployee(employeeAddress, 1200)
+				await addEmployee()
+				await addEmployee()
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -95,11 +99,8 @@ contract('Personnel', accounts => {
 	context('determining allocation', () => {
 		it('throws when employee does not exist', async () => {
 			try {
-				await personnel.determineAllocation.call(
-					[tokenA.address, tokenB.address, tokenC.address],
-					[5000, 3000, 2000],
-					{ from: employeeAddress }
-				)
+				await setExchangeRates()
+				await determineAllocation()
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -108,6 +109,8 @@ contract('Personnel', accounts => {
 
 		it('throws when sender is owner', async () => {
 			try {
+				await setExchangeRates()
+				await addEmployee()
 				await personnel.determineAllocation.call(
 					[tokenA.address, tokenB.address, tokenC.address],
 					[5000, 3000, 2000]
@@ -120,11 +123,8 @@ contract('Personnel', accounts => {
 
 		it('throws when exchange rate is not set', async () => {
 			try {
-				await personnel.determineAllocation.call(
-					[tokenA.address, tokenB.address, tokenC.address],
-					[5000, 3000, 2000],
-					{ from: employeeAddress }
-				)
+				await addEmployee()
+				await determineAllocation()
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -134,7 +134,7 @@ contract('Personnel', accounts => {
 		it('throws when distribution does not add up', async () => {
 			try {
 				await setExchangeRates()
-				await personnel.addEmployee(employeeAddress, 1000)
+				await addEmployee()
 				await personnel.determineAllocation.call(
 					[tokenA.address, tokenB.address, tokenC.address],
 					[2000, 3000, 2000],
@@ -148,12 +148,8 @@ contract('Personnel', accounts => {
 
 		it('succeeds', async () => {
 			await setExchangeRates()
-			await personnel.addEmployee(employeeAddress, 24000e18)
-			await personnel.determineAllocation(
-				[tokenA.address, tokenB.address, tokenC.address],
-				[5000, 3000, 2000],
-				{ from: employeeAddress }
-			)
+			await addEmployee()
+			await determineAllocation()
 			const employee = await personnel.getEmployee.call(1)
 			assert.deepEqual(employee[1], [tokenA.address, tokenB.address, tokenC.address], 'allocatedTokens do not match')
 			assert.deepEqual(employee[2], [tokenA.address, tokenB.address, tokenC.address], 'peggedTokens do not match')
@@ -169,19 +165,11 @@ contract('Personnel', accounts => {
 
 		it('throws when allocation is not due', async () => {
 			await setExchangeRates()
-			await personnel.addEmployee(employeeAddress, 1000)
-			await personnel.determineAllocation(
-				[tokenA.address, tokenB.address, tokenC.address],
-				[5000, 3000, 2000],
-				{ from: employeeAddress }
-			)
+			await addEmployee()
+			await determineAllocation()
 
 			try {
-				await personnel.determineAllocation.call(
-					[tokenA.address, tokenB.address, tokenC.address],
-					[5000, 3000, 2000],
-					{ from: employeeAddress }
-				)
+				await determineAllocation()
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -190,12 +178,8 @@ contract('Personnel', accounts => {
 
 		it('succeeds reallocation', async () => {
 			await setExchangeRates()
-			await personnel.addEmployee(employeeAddress, 24000e18)
-			await personnel.determineAllocation(
-				[tokenA.address, tokenB.address, tokenC.address],
-				[5000, 3000, 2000],
-				{ from: employeeAddress }
-			)
+			await addEmployee()
+			await determineAllocation()
 			await personnel.resetEmployeeLatestTokenAllocation(1)
 			await exchange.setExchangeRate(tokenC.address, 2e18, { from: oracleAddress })
 			await personnel.determineAllocation(
@@ -241,7 +225,7 @@ contract('Personnel', accounts => {
 	context('removing an employee', () => {
 		it('throws when employee does not exist', async () => {
 			try {
-				await personnel.addEmployee(employeeAddress, 1000)
+				await addEmployee()
 				await personnel.removeEmployee.call(2)
 			} catch (error) {
 				return assertThrow(error)
@@ -251,7 +235,7 @@ contract('Personnel', accounts => {
 
 		it('throws when sender is not the owner', async () => {
 			try {
-				await personnel.addEmployee(employeeAddress, 1000)
+				await addEmployee()
 				await personnel.removeEmployee.call(2, { from: employeeAddress })
 			} catch (error) {
 				return assertThrow(error)
@@ -260,7 +244,7 @@ contract('Personnel', accounts => {
 		})
 
 		it('succeeds', async () => {
-			await personnel.addEmployee(employeeAddress, 1000)
+			await addEmployee()
 			await personnel.removeEmployee(1)
 			const employeeCount = await personnel.getEmployeeCount.call()
 			const employee = await personnel.getEmployee.call(1)
