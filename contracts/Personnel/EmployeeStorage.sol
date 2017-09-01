@@ -5,12 +5,8 @@ import '../Zeppelin/Ownable.sol';
 
 contract EmployeeStorage is IEmployeeStorage, Ownable {
 
-	uint employeeCount;
-	uint nextEmployeeId = 1;
-	mapping (uint => Employee) employeesById;
-	mapping (address => uint) employeeIdsByAddress;
-
 	struct Employee {
+		bool exists;
 		uint id;
 		address accountAddress;
 		address[] allocatedTokensIndex;
@@ -23,9 +19,37 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		uint yearlyUSDSalary; // 18 decimals
 	}
 
+	uint nextEmployeeId;
+	uint employeeCount;
+	mapping (uint => Employee) employeesById;
+	mapping (address => uint) employeeIdsByAddress;
+
+	function getEmployee(address _address) private constant returns (Employee storage employee) {
+		uint employeeId = employeeIdsByAddress[_address];
+		return employeesById[employeeId];
+	}
+
+	// Modifiers
+
+	modifier existingEmployeeAddress(address _address) {
+		require(getEmployee(_address).exists);
+		_;
+	}
+
+	modifier existingEmployeeId(uint _id) {
+		require(employeesById[_id].exists);
+		_;
+	}
+
+	modifier notExistingEmployeeAddress(address _address) {
+		require(!getEmployee(_address).exists);
+		_;
+	}
+
 	// Add
 
-	function add(address _address, uint _salary) onlyOwner {
+	function add(address _address, uint _salary) onlyOwner notExistingEmployeeAddress(_address) {
+		employeesById[nextEmployeeId].exists = true;
 		employeesById[nextEmployeeId].id = nextEmployeeId;
 		employeesById[nextEmployeeId].accountAddress = _address;
 		employeesById[nextEmployeeId].yearlyUSDSalary = _salary;
@@ -38,42 +62,87 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	// Set
 
-	function setAllocatedToken(address _address, address _token, uint _distribution) onlyOwner {
-		Employee employee = employeesById[employeeIdsByAddress[_address]];
+	function remove(address[] storage _array, uint _index) private {
+        if (_index >= _array.length) return;
 
-		// insert in index only if new
-		if (employee.allocatedTokens[_token] == 0) {
-			employee.allocatedTokensIndex.push(_token);
+        for (uint i = _index; i < _array.length - 1; i++){
+            _array[i] = _array[i + 1];
+        }
+
+        delete _array[_array.length - 1];
+        _array.length--;
+    }
+
+	function setAllocatedToken(address _address, address _token, uint _distribution) onlyOwner existingEmployeeAddress(_address) {
+		Employee employee = getEmployee(_address);
+
+		// distribution being 0 means deletion
+		if (_distribution == 0) {
+			for (uint i = 0; i < employee.allocatedTokensIndex.length; i++) {
+				if (employee.allocatedTokensIndex[i] == _token) {
+					remove(employee.allocatedTokensIndex, i);
+					break;
+				}
+			}
+
+			delete employee.allocatedTokens[_token];
+		} else {
+			// insert in index only if new
+			if (employee.allocatedTokens[_token] == 0) {
+				employee.allocatedTokensIndex.push(_token);
+			}
+
+			employee.allocatedTokens[_token] = _distribution;
+		}
+	}
+
+	function clearAllocatedAndSalaryTokens(address _address) onlyOwner existingEmployeeAddress(_address) {
+		Employee employee = getEmployee(_address);
+
+		for (uint i; i < employee.allocatedTokensIndex.length; i++) {
+			delete employee.allocatedTokens[employee.allocatedTokensIndex[i]];
+			delete employee.salaryTokens[employee.allocatedTokensIndex[i]];
 		}
 
-		employee.allocatedTokens[_token] = _distribution;
+		delete employee.allocatedTokensIndex;
 	}
 
-	function clearAllocatedTokens(address _address) onlyOwner {
+	function setPeggedToken(address _address, address _token, uint _value) onlyOwner existingEmployeeAddress(_address) {
+		Employee employee = getEmployee(_address);
+
+		// value being 0 means deletion
+		if (_value == 0) {
+			for (uint i = 0; i < employee.peggedTokensIndex.length; i++) {
+				if (employee.peggedTokensIndex[i] == _token) {
+					remove(employee.peggedTokensIndex, i);
+					break;
+				}
+			}
+
+			delete employee.peggedTokens[_token];
+		} else {
+			// insert in index only if new
+			if (employee.peggedTokens[_token] == 0) {
+				employee.peggedTokensIndex.push(_token);
+			}
+
+			employee.peggedTokens[_token] = _value;
+		}
+	}
+
+	function setSalaryToken(address _address, address _token, uint _value) onlyOwner existingEmployeeAddress(_address) {
+		getEmployee(_address).salaryTokens[_token] = _value;
+	}
+
+	function setLatestTokenAllocation(address _address, uint _date) onlyOwner existingEmployeeAddress(_address) {
 
 	}
 
-	function setPeggedToken(address _address, address _token, uint _value) onlyOwner {
+	function setLatestPayday(address _address, uint _date) onlyOwner existingEmployeeAddress(_address) {
 
 	}
 
-	function setSalaryToken(address _address, address _token, uint _value) onlyOwner {
-
-	}
-
-	function clearSalaryTokens(address _address) onlyOwner {
-
-	}
-
-	function setLatestTokenAllocation(address _address, uint _date) onlyOwner {
-
-	}
-
-	function setLatestPayday(address _address, uint _date) onlyOwner {
-
-	}
-
-	function setYearlyUSDSalary(address _address, uint _salary) onlyOwner {
+	function setYearlyUSDSalary(address _address, uint _salary) onlyOwner existingEmployeeAddress(_address) {
 
 	}
 
@@ -83,53 +152,57 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		return employeeCount;
 	}
 
-	function getAddress(uint _id) onlyOwner constant returns (address) {
+	function getId(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+		return getEmployee(_address).id;
+	}
+
+	function getAddress(uint _id) onlyOwner existingEmployeeId(_id) constant returns (address) {
 		return employeesById[_id].accountAddress;
 	}
 
-	function getAllocatedTokenCount(address _address) onlyOwner constant returns (uint) {
-		return employeesById[employeeIdsByAddress[_address]].allocatedTokensIndex.length;
+	function getAllocatedTokenCount(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+		return getEmployee(_address).allocatedTokensIndex.length;
 	}
 
-	function getAllocatedTokenAddress(address _address, uint _index) onlyOwner constant returns (address) {
-		return employeesById[employeeIdsByAddress[_address]].allocatedTokensIndex[_index];
+	function getAllocatedTokenAddress(address _address, uint _index) onlyOwner existingEmployeeAddress(_address) constant returns (address) {
+		return getEmployee(_address).allocatedTokensIndex[_index];
 	}
 
-	function getAllocatedTokenValue(address _address, address _token) onlyOwner constant returns (uint) {
-		return employeesById[employeeIdsByAddress[_address]].allocatedTokens[_token];
+	function getAllocatedTokenValue(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+		return getEmployee(_address).allocatedTokens[_token];
 	}
 
-	function getPeggedTokenCount(address _address) onlyOwner constant returns (uint) {
-
+	function getPeggedTokenCount(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+		return getEmployee(_address).peggedTokensIndex.length;
 	}
 
-	function getPeggedTokenAddress(address _address, uint _index) onlyOwner constant returns (address) {
-
+	function getPeggedTokenAddress(address _address, uint _index) onlyOwner existingEmployeeAddress(_address) constant returns (address) {
+		return getEmployee(_address).peggedTokensIndex[_index];
 	}
 
-	function getPeggedTokenValue(address _address, address _token) onlyOwner constant returns (uint) {
-
+	function getPeggedTokenValue(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+		return getEmployee(_address).peggedTokens[_token];
 	}
 
-	function getSalaryTokenValue(address _address, address _token) onlyOwner constant returns (uint) {
-
+	function getSalaryTokenValue(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+		return getEmployee(_address).salaryTokens[_token];
 	}
 
-	function getLatestTokenAllocation(address _address) onlyOwner constant returns (uint) {
-
-	}
-
-	function getLatestPayday(address _address) onlyOwner constant returns (uint) {
+	function getLatestTokenAllocation(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
 
 	}
 
-	function getYearlyUSDSalary(address _address) onlyOwner constant returns (uint) {
-		return employeesById[employeeIdsByAddress[_address]].yearlyUSDSalary;
+	function getLatestPayday(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+
+	}
+
+	function getYearlyUSDSalary(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+		return getEmployee(_address).yearlyUSDSalary;
 	}
 
 	// Remove
 
-	function remove(address _address) onlyOwner {
+	function remove(address _address) onlyOwner existingEmployeeAddress(_address) {
 
 	}
 }

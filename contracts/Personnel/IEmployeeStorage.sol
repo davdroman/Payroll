@@ -6,12 +6,10 @@ contract IEmployeeStorage {
 
 	// Set
 	function setAllocatedToken(address _address, address _token, uint _distribution);
-	function clearAllocatedTokens(address _address);
-
 	function setPeggedToken(address _address, address _token, uint _value);
-
 	function setSalaryToken(address _address, address _token, uint _value);
-	function clearSalaryTokens(address _address);
+
+	function clearAllocatedAndSalaryTokens(address _address);
 
 	function setLatestTokenAllocation(address _address, uint _date);
 	function setLatestPayday(address _address, uint _date);
@@ -19,6 +17,7 @@ contract IEmployeeStorage {
 
 	// Get
 	function getCount() constant returns (uint);
+	function getId(address _address) constant returns (uint);
 	function getAddress(uint _id) constant returns (address);
 
 	function getAllocatedTokenCount(address _address) constant returns (uint);
