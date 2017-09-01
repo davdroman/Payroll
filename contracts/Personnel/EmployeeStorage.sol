@@ -38,11 +38,18 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	// Set
 
-	function clearAllocatedTokens(address _address) onlyOwner {
+	function setAllocatedToken(address _address, address _token, uint _distribution) onlyOwner {
+		Employee employee = employeesById[employeeIdsByAddress[_address]];
 
+		// insert in index only if new
+		if (employee.allocatedTokens[_token] == 0) {
+			employee.allocatedTokensIndex.push(_token);
+		}
+
+		employee.allocatedTokens[_token] = _distribution;
 	}
 
-	function setAllocatedToken(address _address, address _token, uint _distribution) onlyOwner {
+	function clearAllocatedTokens(address _address) onlyOwner {
 
 	}
 
@@ -50,11 +57,11 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	}
 
-	function clearSalaryTokens(address _address) onlyOwner {
+	function setSalaryToken(address _address, address _token, uint _value) onlyOwner {
 
 	}
 
-	function setSalaryToken(address _address, address _token, uint _value) onlyOwner {
+	function clearSalaryTokens(address _address) onlyOwner {
 
 	}
 
@@ -67,7 +74,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function setYearlyUSDSalary(address _address, uint _salary) onlyOwner {
-		/*employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;*/
+
 	}
 
 	// Get
@@ -81,15 +88,15 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function getAllocatedTokenCount(address _address) onlyOwner constant returns (uint) {
-
+		return employeesById[employeeIdsByAddress[_address]].allocatedTokensIndex.length;
 	}
 
 	function getAllocatedTokenAddress(address _address, uint _index) onlyOwner constant returns (address) {
-
+		return employeesById[employeeIdsByAddress[_address]].allocatedTokensIndex[_index];
 	}
 
 	function getAllocatedTokenValue(address _address, address _token) onlyOwner constant returns (uint) {
-
+		return employeesById[employeeIdsByAddress[_address]].allocatedTokens[_token];
 	}
 
 	function getPeggedTokenCount(address _address) onlyOwner constant returns (uint) {
