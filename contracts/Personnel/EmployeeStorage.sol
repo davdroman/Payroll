@@ -67,17 +67,17 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function setYearlyUSDSalary(address _address, uint _salary) onlyOwner {
-		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;
+		/*employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;*/
 	}
 
 	// Get
 
 	function getCount() onlyOwner constant returns (uint) {
-
+		return employeeCount;
 	}
 
 	function getAddress(uint _id) onlyOwner constant returns (address) {
-
+		return employeesById[_id].accountAddress;
 	}
 
 	function getAllocatedTokenCount(address _address) onlyOwner constant returns (uint) {
@@ -117,7 +117,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function getYearlyUSDSalary(address _address) onlyOwner constant returns (uint) {
-
+		return employeesById[employeeIdsByAddress[_address]].yearlyUSDSalary;
 	}
 
 	// Remove
