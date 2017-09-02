@@ -48,11 +48,11 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	// Add
 
-	function add(address _address, uint _salary) onlyOwner notExistingEmployeeAddress(_address) {
+	function add(address _address, uint _yearlyUSDSalary) onlyOwner notExistingEmployeeAddress(_address) {
 		employeesById[nextEmployeeId].exists = true;
 		employeesById[nextEmployeeId].id = nextEmployeeId;
 		employeesById[nextEmployeeId].accountAddress = _address;
-		employeesById[nextEmployeeId].yearlyUSDSalary = _salary;
+		employeesById[nextEmployeeId].yearlyUSDSalary = _yearlyUSDSalary;
 
 		employeeIdsByAddress[_address] = nextEmployeeId;
 
