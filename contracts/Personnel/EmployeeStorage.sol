@@ -24,7 +24,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	mapping (uint => Employee) employeesById;
 	mapping (address => uint) employeeIdsByAddress;
 
-	function getEmployee(address _address) private constant returns (Employee storage employee) {
+	function getEmployee(address _address) internal constant returns (Employee storage employee) {
 		uint employeeId = employeeIdsByAddress[_address];
 		return employeesById[employeeId];
 	}
@@ -203,6 +203,21 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	// Remove
 
 	function remove(address _address) onlyOwner existingEmployeeAddress(_address) {
+		Employee employee = getEmployee(_address);
+		clearAllocatedAndSalaryTokens(_address);
 
+		delete employee.id;
+		delete employee.accountAddress;
+
+		for (uint i; i < employee.peggedTokensIndex.length; i++) {
+			delete employee.peggedTokens[employee.peggedTokensIndex[i]];
+		}
+
+		delete employee.peggedTokensIndex;
+		delete employee.latestTokenAllocation;
+		delete employee.latestPayday;
+		delete employee.yearlyUSDSalary;
+		delete employee.exists;
+		employeeCount--;
 	}
 }

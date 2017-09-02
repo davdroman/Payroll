@@ -1,5 +1,5 @@
 const assertThrow = require('./helpers/assertThrow')
-const EmployeeStorage = artifacts.require('EmployeeStorage')
+const EmployeeStorage = artifacts.require('EmployeeStorageMock')
 
 contract('EmployeeStorage', accounts => {
 	let storage
@@ -209,6 +209,52 @@ contract('EmployeeStorage', accounts => {
 			await storage.add(employeeAddress, 1234)
 			await storage.setYearlyUSDSalary(employeeAddress, 100)
 			assert.equal(await storage.getYearlyUSDSalary.call(employeeAddress), 100)
+		})
+	})
+
+	context('removing employee', () => {
+		it('throws when sender is not owner', async () => {
+			try {
+				await storage.remove.call(employeeAddress, { from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee was removed by other than owner')
+		})
+
+		it('succeeds', async () => {
+			await storage.add(employeeAddress, 1234)
+			await storage.setAllocatedToken(employeeAddress, tokenA, 2000)
+			await storage.setAllocatedToken(employeeAddress, tokenB, 3500)
+			await storage.setAllocatedToken(employeeAddress, tokenC, 5400)
+			await storage.setPeggedToken(employeeAddress, tokenA, 3000)
+			await storage.setPeggedToken(employeeAddress, tokenB, 4500)
+			await storage.setPeggedToken(employeeAddress, tokenC, 6400)
+			await storage.setSalaryToken(employeeAddress, tokenA, 4000)
+			await storage.setSalaryToken(employeeAddress, tokenB, 5500)
+			await storage.setSalaryToken(employeeAddress, tokenC, 7400)
+			await storage.setLatestTokenAllocation(employeeAddress, 100)
+			await storage.setLatestPayday(employeeAddress, 200)
+			await storage.setYearlyUSDSalary(employeeAddress, 300)
+			await storage.remove(employeeAddress)
+			assert.equal(await storage.getCount.call(), 0)
+			assert.equal(await storage.mock_getExists.call(employeeAddress), false)
+			assert.equal(await storage.mock_getId.call(employeeAddress), 0)
+			assert.equal(await storage.mock_getAddress.call(0), EMPTY_ADDRESS)
+			assert.equal(await storage.mock_getAllocatedTokenCount.call(employeeAddress), 0)
+			assert.equal(await storage.mock_getAllocatedTokenValue.call(employeeAddress, tokenA), 0)
+			assert.equal(await storage.mock_getAllocatedTokenValue.call(employeeAddress, tokenB), 0)
+			assert.equal(await storage.mock_getAllocatedTokenValue.call(employeeAddress, tokenC), 0)
+			assert.equal(await storage.mock_getPeggedTokenCount.call(employeeAddress), 0)
+			assert.equal(await storage.mock_getPeggedTokenValue.call(employeeAddress, tokenA), 0)
+			assert.equal(await storage.mock_getPeggedTokenValue.call(employeeAddress, tokenB), 0)
+			assert.equal(await storage.mock_getPeggedTokenValue.call(employeeAddress, tokenC), 0)
+			assert.equal(await storage.mock_getSalaryTokenValue.call(employeeAddress, tokenA), 0)
+			assert.equal(await storage.mock_getSalaryTokenValue.call(employeeAddress, tokenB), 0)
+			assert.equal(await storage.mock_getSalaryTokenValue.call(employeeAddress, tokenC), 0)
+			assert.equal(await storage.mock_getLatestTokenAllocation.call(employeeAddress), 0)
+			assert.equal(await storage.mock_getLatestPayday.call(employeeAddress), 0)
+			assert.equal(await storage.mock_getYearlyUSDSalary.call(employeeAddress), 0)
 		})
 	})
 })
