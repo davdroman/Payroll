@@ -135,15 +135,15 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function setLatestTokenAllocation(address _address, uint _date) onlyOwner existingEmployeeAddress(_address) {
-
+		getEmployee(_address).latestTokenAllocation = _date;
 	}
 
 	function setLatestPayday(address _address, uint _date) onlyOwner existingEmployeeAddress(_address) {
-
+		getEmployee(_address).latestPayday = _date;
 	}
 
 	function setYearlyUSDSalary(address _address, uint _salary) onlyOwner existingEmployeeAddress(_address) {
-
+		getEmployee(_address).yearlyUSDSalary = _salary;
 	}
 
 	// Get
@@ -189,11 +189,11 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function getLatestTokenAllocation(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
-
+		return getEmployee(_address).latestTokenAllocation;
 	}
 
 	function getLatestPayday(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
-
+		return getEmployee(_address).latestPayday;
 	}
 
 	function getYearlyUSDSalary(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {

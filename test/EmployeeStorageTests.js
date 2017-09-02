@@ -15,7 +15,7 @@ contract('EmployeeStorage', accounts => {
 		storage = await EmployeeStorage.new()
 	})
 
-	context('adding new employee', () => {
+	context('adding employee', () => {
 		it('throws when sender is not owner', async () => {
 			try {
 				await storage.add.call(employeeAddress, 1000, { from: employeeAddress })
@@ -158,6 +158,57 @@ contract('EmployeeStorage', accounts => {
 			assert.equal(await storage.getSalaryTokenValue.call(employeeAddress, tokenA), 0)
 			assert.equal(await storage.getSalaryTokenValue.call(employeeAddress, tokenB), 0)
 			assert.equal(await storage.getSalaryTokenValue.call(employeeAddress, tokenC), 0)
+		})
+	})
+
+	context('setting latest allocation date', () => {
+		it('throws when sender is not owner', async () => {
+			try {
+				await storage.setLatestTokenAllocation.call(employeeAddress, 100, { from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Setting latest allocation date was done by other than owner')
+		})
+
+		it('succeeds', async () => {
+			await storage.add(employeeAddress, 1234)
+			await storage.setLatestTokenAllocation(employeeAddress, 100)
+			assert.equal(await storage.getLatestTokenAllocation.call(employeeAddress), 100)
+		})
+	})
+
+	context('setting latest payday date', () => {
+		it('throws when sender is not owner', async () => {
+			try {
+				await storage.setLatestPayday.call(employeeAddress, 100, { from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Setting latest payday date was done by other than owner')
+		})
+
+		it('succeeds', async () => {
+			await storage.add(employeeAddress, 1234)
+			await storage.setLatestPayday(employeeAddress, 100)
+			assert.equal(await storage.getLatestPayday.call(employeeAddress), 100)
+		})
+	})
+
+	context('setting yearly USD salary', () => {
+		it('throws when sender is not owner', async () => {
+			try {
+				await storage.setYearlyUSDSalary.call(employeeAddress, 100, { from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Setting yearly USD salary was done by other than owner')
+		})
+
+		it('succeeds', async () => {
+			await storage.add(employeeAddress, 1234)
+			await storage.setYearlyUSDSalary(employeeAddress, 100)
+			assert.equal(await storage.getYearlyUSDSalary.call(employeeAddress), 100)
 		})
 	})
 })
