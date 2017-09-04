@@ -106,7 +106,7 @@ contract('Payroll', accounts => {
 			await addEmployee()
 
 			try {
-				await payroll.determineAllocation(
+				await payroll.determineAllocation.call(
 					[tokenA.address, tokenB.address, tokenC.address, tokenD.address],
 					[5000, 3000, 2000],
 					{ from: employeeAddress }
@@ -122,7 +122,7 @@ contract('Payroll', accounts => {
 			await addEmployee()
 
 			try {
-				await payroll.determineAllocation(
+				await payroll.determineAllocation.call(
 					[tokenA.address, tokenB.address, tokenC.address, tokenD.address],
 					[5000, 3000, 1000, 500],
 					{ from: employeeAddress }
@@ -222,38 +222,43 @@ contract('Payroll', accounts => {
 
 	context('setting employee salary', () => {
 		it('throws when sender is not owner', async () => {
+			await setExchangeRates()
 			await addEmployee()
+			await determineAllocation()
 
 			try {
-				await payroll.setEmployeeSalary(0, 5678, { from: otherAddress })
+				await payroll.setEmployeeSalary.call(1, 5678, { from: otherAddress })
 			} catch (error) {
 				return assertThrow(error)
 			}
 			throw new Error('Employee was added by other than owner')
 		})
 
-		// it('throws when address is invalid', async () => {
-		// 	try {
-		// 		await payroll.addEmployee.call(EMPTY_ADDRESS, 1234)
-		// 	} catch (error) {
-		// 		return assertThrow(error)
-		// 	}
-		// 	throw new Error('Employee was added with invalid address')
-		// })
-		//
-		// it('throws when salary is zero', async () => {
-		// 	try {
-		// 		await payroll.addEmployee.call(employeeAddress, 0)
-		// 	} catch (error) {
-		// 		return assertThrow(error)
-		// 	}
-		// 	throw new Error('Employee was added with salary as zero')
-		// })
+		it('throws when salary is zero', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+
+			try {
+				await payroll.setEmployeeSalary.call(1, 0)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee was added with salary zero')
+		})
 
 		it('succeeds', async () => {
+			await setExchangeRates()
 			await addEmployee()
-			await payroll.setEmployeeSalary(1, 5678)
-			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 5678)
+			await determineAllocation()
+
+			await payroll.setEmployeeSalary(1, 30000e18)
+			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 30000e18)
+
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenA.address), 625e18)
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenB.address), 300e7)
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenC.address), 41)
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenD.address), 62.5e4)
 		})
 	})
 })
