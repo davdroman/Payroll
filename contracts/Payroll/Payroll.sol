@@ -172,26 +172,6 @@ contract Payroll is IPayroll, Ownable {
 		employeeStorage.setLatestTokenAllocation(employeeAddress, now);
 	}
 
-	function getAllocatedTokens() constant returns (address[]) {
-		/*return employeesById[employeeIdsByAddress[msg.sender]].allocatedTokensIndex.length;*/
-	}
-
-	function getAllocatedTokenValue(address _token) validAddress(_token) constant returns (uint) {
-		/*return employeesById[employeeIdsByAddress[msg.sender]].allocatedTokens[tokenAddress];*/
-	}
-
-	function getPeggedTokens() constant returns (address[]) {
-		/*return employeesById[employeeIdsByAddress[msg.sender]].peggedTokensIndex[index];*/
-	}
-
-	function getPeggedTokenValue(address _token) validAddress(_token) constant returns (uint) {
-		/*return employeesById[employeeIdsByAddress[msg.sender]].peggedTokens[tokenAddress];*/
-	}
-
-	function getSalaryTokenValue(address _token) validAddress(_token) constant returns (uint) {
-		/*return employeesById[employeeIdsByAddress[msg.sender]].salaryTokens[tokenAddress];*/
-	}
-
 	function payday() {
 
 	}

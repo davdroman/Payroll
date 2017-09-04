@@ -24,12 +24,4 @@ contract IPayroll {
 	// Employee-only
 	function determineAllocation(address[] _tokens, uint[] _distribution);
 	function payday();
-
-	function getAllocatedTokens() constant returns (address[]);
-	function getAllocatedTokenValue(address _token) constant returns (uint);
-
-	function getPeggedTokens() constant returns (address[]);
-	function getPeggedTokenValue(address _token) constant returns (uint);
-
-	function getSalaryTokenValue(address _token) constant returns (uint);
 }
