@@ -19,7 +19,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		uint yearlyUSDSalary; // 18 decimals
 	}
 
-	uint nextEmployeeId;
+	uint nextEmployeeId = 1;
 	uint employeeCount;
 	mapping (uint => Employee) employeesById;
 	mapping (address => uint) employeeIdsByAddress;

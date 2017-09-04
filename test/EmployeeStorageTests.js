@@ -39,8 +39,8 @@ contract('EmployeeStorage', accounts => {
 		it('succeeds', async () => {
 			await storage.add(employeeAddress, 1234)
 			assert.equal(await storage.getCount.call(), 1)
-			assert.equal(await storage.getId.call(employeeAddress), 0)
-			assert.equal(await storage.getAddress.call(0), employeeAddress)
+			assert.equal(await storage.getId.call(employeeAddress), 1)
+			assert.equal(await storage.getAddress.call(1), employeeAddress)
 			assert.equal(await storage.getYearlyUSDSalary.call(employeeAddress), 1234)
 		})
 	})
