@@ -261,4 +261,73 @@ contract('Payroll', accounts => {
 			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenD.address), 62.5e4)
 		})
 	})
+
+	context('removing an employee', () => {
+		it('throws when employee does not exist', async () => {
+			await addEmployee()
+
+			try {
+				await payroll.removeEmployee(2)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Inexistent employee was removed (wat)')
+		})
+
+		it('throws when sender is not the owner', async () => {
+			await addEmployee()
+
+			try {
+				await payroll.removeEmployee.call(1, { from: otherAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee was removed by other than owner')
+		})
+
+		it('succeeds', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+
+			await payroll.removeEmployee(1)
+
+			assert.equal(await employeeStorage.mock_getCount.call(), 0)
+			assert.equal(await employeeStorage.mock_getExists.call(employeeAddress), false)
+			assert.equal(await employeeStorage.mock_getId.call(employeeAddress), 0)
+			assert.equal(await employeeStorage.mock_getAddress.call(1), EMPTY_ADDRESS)
+			assert.equal(await employeeStorage.mock_getLatestTokenAllocation.call(employeeAddress), 0)
+			assert.equal(await employeeStorage.mock_getLatestPayday.call(employeeAddress), 0)
+			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 0)
+
+			assert.equal(await employeeStorage.mock_getAllocatedTokenCount.call(employeeAddress), 0)
+			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenA.address), 0)
+			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenB.address), 0)
+			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenC.address), 0)
+			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenD.address), 0)
+
+			assert.equal(await employeeStorage.mock_getPeggedTokenCount.call(employeeAddress), 0)
+			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenA.address), 0)
+			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenB.address), 0)
+			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenC.address), 0)
+			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenD.address), 0)
+
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenA.address), 0)
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenB.address), 0)
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenC.address), 0)
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenD.address), 0)
+		})
+
+		it('succeeds readding', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+
+			await payroll.removeEmployee(1)
+			await addEmployee()
+
+			assert.equal(await employeeStorage.mock_getAddress.call(2), employeeAddress)
+			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 24000e18)
+		})
+	})
 })
