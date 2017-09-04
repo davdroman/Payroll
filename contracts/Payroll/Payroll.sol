@@ -19,18 +19,12 @@ contract Payroll is IPayroll, Ownable {
 		_;
 	}
 
-	modifier validEmployeeId(uint _id) {
-		_;
-	}
-
 	modifier higherThanZeroUInt(uint _uint) {
 		require(_uint > 0);
 		_;
 	}
 
-	modifier onlyEmployee() {
-		_;
-	}
+	// Init/setters
 
 	function Payroll(address _employeeStorage, address _exchange) {
 		setEmployeeStorage(_employeeStorage);
@@ -58,21 +52,21 @@ contract Payroll is IPayroll, Ownable {
 		employeeStorage.add(_address, _yearlyUSDSalary);
 	}
 
-	function setEmployeeSalary(uint _id, uint _yearlyUSDSalary) onlyOwner validEmployeeId(_id) {
-		/*require(newYearlyUSDSalary > 0);
-		employeesById[employeeId].yearlyUSDSalary = newYearlyUSDSalary;
-		recalculateSalaryTokens(employeeId);*/
+	function setEmployeeSalary(uint _id, uint _yearlyUSDSalary) onlyOwner higherThanZeroUInt(_yearlyUSDSalary) {
+		address employeeAddress = employeeStorage.getAddress(_id);
+		employeeStorage.setYearlyUSDSalary(employeeAddress, _yearlyUSDSalary);
+		determineSalaryTokens(employeeAddress);
 	}
 
-	function recalculateSalaryTokens(uint employeeId) private {
-		/*Employee employee = employeesById[employeeId];
+	function determineSalaryTokens(address employeeAddress) private {
+		uint allocatedTokenCount = employeeStorage.getAllocatedTokenCount(employeeAddress);
 
 		// calculate new salary
-		for (uint i = 0; i < employee.allocatedTokensIndex.length; i++) {
+		for (uint i = 0; i < allocatedTokenCount; i++) {
 			// fetch info to calculate token salary
-			address allocatedToken = employee.allocatedTokensIndex[i];
-			uint allocation = employee.allocatedTokens[allocatedToken];
-			uint peggedRate = employee.peggedTokens[allocatedToken];
+			address allocatedToken = employeeStorage.getAllocatedTokenAddress(employeeAddress, i);
+			uint allocation = employeeStorage.getAllocatedTokenValue(employeeAddress, allocatedToken);
+			uint peggedRate = employeeStorage.getPeggedTokenValue(employeeAddress, allocatedToken);
 
 			// assert validity
 			assert(allocatedToken != 0x0);
@@ -80,48 +74,25 @@ contract Payroll is IPayroll, Ownable {
 			assert(peggedRate > 0);
 
 			// calculate monthly salary
-			uint monthlyUSDSalary = employee.yearlyUSDSalary.div(12);
+			uint monthlyUSDSalary = employeeStorage.getYearlyUSDSalary(employeeAddress).div(12);
 			uint monthlyUSDSalaryAllocation = monthlyUSDSalary.mul(allocation).div(10000);
 			uint monthlySalaryTokens = exchange.exchange(allocatedToken, monthlyUSDSalaryAllocation, peggedRate);
 
 			// assign salary tokens
-			employee.salaryTokens[allocatedToken] = monthlySalaryTokens;
-		}*/
+			employeeStorage.setSalaryToken(employeeAddress, allocatedToken, monthlySalaryTokens);
+		}
 	}
 
-	function removeEmployee(uint _id) onlyOwner validEmployeeId(_id) {
-		/*Employee employee = employeesById[employeeId];
-
-		for (uint a = 0; a < employee.allocatedTokensIndex.length; a++) {
-			delete employee.allocatedTokens[employee.allocatedTokensIndex[a]];
-			delete employee.salaryTokens[employee.allocatedTokensIndex[a]];
-		}
-
-		for (uint p = 0; p < employee.peggedTokensIndex.length; p++) {
-			delete employee.peggedTokens[employee.peggedTokensIndex[p]];
-		}
-
-		delete employeeIdsByAddress[employee.accountAddress];
-
-		delete employee.id;
-		delete employee.accountAddress;
-		delete employee.allocatedTokensIndex;
-		delete employee.peggedTokensIndex;
-		delete employee.latestTokenAllocation;
-		delete employee.latestPayday;
-		delete employee.yearlyUSDSalary;
-
-		employeeCount--;*/
+	function removeEmployee(uint _id) onlyOwner {
+		/*employeeStorage.remove(employeeStorage.getAddress(_id));*/
 	}
 
 	function getEmployeeCount() onlyOwner constant returns (uint) {
-		/*return employeeCount;*/
+		/*return employeeStorage.getCount();*/
 	}
 
-	function getEmployeeId(address _address) onlyOwner constant returns (uint) {
-		/*uint employeeId = employeeIdsByAddress[employeeAddress];
-		require(employeeId > 0);
-		return employeeId;*/
+	function getEmployeeId(address _address) onlyOwner validAddress(_address) constant returns (uint) {
+		/*return employeeStorage.getId(_address);*/
 	}
 
 	function getEmployee(uint _id) onlyOwner constant returns (
@@ -163,61 +134,61 @@ contract Payroll is IPayroll, Ownable {
 	/// @param _distribution is an array of percentages expressed as integers
 	/// with a max sum of 10000 (100.00%)
 	/// i.e. [5000, 3000, 2000]
-	function determineAllocation(address[] _tokens, uint[] _distribution) onlyEmployee {
-		/*require(tokens.length == distribution.length);
+	function determineAllocation(address[] _tokens, uint[] _distribution) {
+		require(_tokens.length == _distribution.length);
 
+		// check total distribution adds up to exactly 100%
 		uint totalDistribution = 0;
-		for (uint d = 0; d < distribution.length; d++) { totalDistribution += distribution[d]; }
-		require(totalDistribution == 10000); // check total distribution adds up to exactly 100%
+		for (uint d = 0; d < _distribution.length; d++) { totalDistribution += _distribution[d]; }
+		require(totalDistribution == 10000);
 
-		Employee employee = employeesById[employeeIdsByAddress[msg.sender]];
-		assert(now.sub(employee.latestTokenAllocation) >= 182 days); // check latest reallocation was > 6 months ago
+		// fetch employee address
+		address employeeAddress = msg.sender;
 
-		// clean up old allocation
-		for (uint a = 0; a < employee.allocatedTokensIndex.length; a++) {
-			address allocatedToken = employee.allocatedTokensIndex[a];
-			delete employee.allocatedTokens[allocatedToken];
-			delete employee.salaryTokens[allocatedToken];
-		}
-		delete employee.allocatedTokensIndex;
+		// check latest reallocation was > 6 months ago
+		uint latestTokenAllocation = employeeStorage.getLatestTokenAllocation(employeeAddress);
+		assert(now.sub(latestTokenAllocation) >= 182 days);
+
+		// clean up old allocation and salary
+		employeeStorage.clearAllocatedAndSalaryTokens(employeeAddress);
 
 		// set new allocation
-		for (uint t = 0; t < tokens.length; t++) {
-			address token = tokens[t];
-			employee.allocatedTokensIndex.push(token);
-			employee.allocatedTokens[token] = distribution[t];
+		for (uint t = 0; t < _tokens.length; t++) {
+			address token = _tokens[t];
+			employeeStorage.setAllocatedToken(employeeAddress, token, _distribution[t]);
 
 			// peg rate (new tokens only)
-			if (employee.peggedTokens[token] == 0) {
+			if (employeeStorage.getPeggedTokenValue(employeeAddress, token) == 0) {
 				uint tokenExchangeRate = exchange.exchangeRates(token);
 				assert(tokenExchangeRate > 0);
-				employee.peggedTokensIndex.push(token);
-				employee.peggedTokens[token] = tokenExchangeRate;
+				employeeStorage.setPeggedToken(employeeAddress, token, tokenExchangeRate);
 			}
 		}
 
-		recalculateSalaryTokens(employee.id);
+		// set new salary tokens
+		determineSalaryTokens(employeeAddress);
 
-		employee.latestTokenAllocation = now;*/
+		// updates allocation date
+		employeeStorage.setLatestTokenAllocation(employeeAddress, now);
 	}
 
-	function getAllocatedTokens() onlyEmployee constant returns (address[]) {
+	function getAllocatedTokens() constant returns (address[]) {
 		/*return employeesById[employeeIdsByAddress[msg.sender]].allocatedTokensIndex.length;*/
 	}
 
-	function getAllocatedTokenValue(address _token) onlyEmployee validAddress(_token) constant returns (uint) {
+	function getAllocatedTokenValue(address _token) validAddress(_token) constant returns (uint) {
 		/*return employeesById[employeeIdsByAddress[msg.sender]].allocatedTokens[tokenAddress];*/
 	}
 
-	function getPeggedTokens() onlyEmployee constant returns (address[]) {
+	function getPeggedTokens() constant returns (address[]) {
 		/*return employeesById[employeeIdsByAddress[msg.sender]].peggedTokensIndex[index];*/
 	}
 
-	function getPeggedTokenValue(address _token) onlyEmployee validAddress(_token) constant returns (uint) {
+	function getPeggedTokenValue(address _token) validAddress(_token) constant returns (uint) {
 		/*return employeesById[employeeIdsByAddress[msg.sender]].peggedTokens[tokenAddress];*/
 	}
 
-	function getSalaryTokenValue(address _token) onlyEmployee validAddress(_token) constant returns (uint) {
+	function getSalaryTokenValue(address _token) validAddress(_token) constant returns (uint) {
 		/*return employeesById[employeeIdsByAddress[msg.sender]].salaryTokens[tokenAddress];*/
 	}
 
