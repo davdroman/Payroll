@@ -7,14 +7,7 @@ contract IPayroll {
 	function removeEmployee(uint _id);
 	function getEmployeeCount() constant returns (uint);
 	function getEmployeeId(address _address) constant returns (uint);
-	function getEmployee(uint _id) constant returns (
-		address accountAddress,
-		address[] allocatedTokensIndex,
-		address[] peggedTokensIndex,
-		uint latestTokenAllocation,
-		uint latestPayday,
-		uint yearlyUSDSalary
-	);
+	function getEmployee(uint _id) constant returns (address accountAddress, uint latestTokenAllocation, uint latestPayday, uint yearlyUSDSalary);
 
 	function calculatePayrollBurnrate() constant returns (uint);
 	function calculatePayrollRunway() constant returns (uint);

@@ -95,21 +95,11 @@ contract Payroll is IPayroll, Ownable {
 		/*return employeeStorage.getId(_address);*/
 	}
 
-	function getEmployee(uint _id) onlyOwner constant returns (
-		address accountAddress,
-		address[] allocatedTokensIndex,
-		address[] peggedTokensIndex,
-		uint latestTokenAllocation,
-		uint latestPayday,
-		uint yearlyUSDSalary
-	) {
-		/*Employee employee = employeesById[employeeId];
-		accountAddress = employee.accountAddress;
-		allocatedTokensIndex = employee.allocatedTokensIndex;
-		peggedTokensIndex = employee.peggedTokensIndex;
-		latestTokenAllocation = employee.latestTokenAllocation;
-		latestPayday = employee.latestPayday;
-		yearlyUSDSalary = employee.yearlyUSDSalary;*/
+	function getEmployee(uint _id) onlyOwner constant returns (address accountAddress, uint latestTokenAllocation, uint latestPayday, uint yearlyUSDSalary) {
+		accountAddress = employeeStorage.getAddress(_id);
+		latestTokenAllocation = employeeStorage.getLatestTokenAllocation(accountAddress);
+		latestPayday = employeeStorage.getLatestPayday(accountAddress);
+		yearlyUSDSalary = employeeStorage.getYearlyUSDSalary(accountAddress);
 	}
 
 	// Monthly usd amount spent in salaries
