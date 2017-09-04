@@ -84,15 +84,15 @@ contract Payroll is IPayroll, Ownable {
 	}
 
 	function removeEmployee(uint _id) onlyOwner {
-		/*employeeStorage.remove(employeeStorage.getAddress(_id));*/
+		employeeStorage.remove(employeeStorage.getAddress(_id));
 	}
 
 	function getEmployeeCount() onlyOwner constant returns (uint) {
-		/*return employeeStorage.getCount();*/
+		return employeeStorage.getCount();
 	}
 
 	function getEmployeeId(address _address) onlyOwner validAddress(_address) constant returns (uint) {
-		/*return employeeStorage.getId(_address);*/
+		return employeeStorage.getId(_address);
 	}
 
 	function getEmployee(uint _id) onlyOwner constant returns (address accountAddress, uint latestTokenAllocation, uint latestPayday, uint yearlyUSDSalary) {
