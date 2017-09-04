@@ -78,9 +78,9 @@ contract('Payroll', accounts => {
 		})
 
 		it('succeeds', async () => {
-			await payroll.addEmployee(employeeAddress, 1234)
+			await addEmployee()
 			assert.equal(await employeeStorage.mock_getAddress.call(1), employeeAddress)
-			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 1234)
+			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 24000e18)
 		})
 	})
 
@@ -99,6 +99,38 @@ contract('Payroll', accounts => {
 				return assertThrow(error)
 			}
 			throw new Error('Allocation was determined by other than employee')
+		})
+
+		it('throws when array lengths do not match', async () => {
+			await setExchangeRates()
+			await addEmployee()
+
+			try {
+				await payroll.determineAllocation(
+					[tokenA.address, tokenB.address, tokenC.address, tokenD.address],
+					[5000, 3000, 2000],
+					{ from: employeeAddress }
+				)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Allocation was determined with unmatched arrays')
+		})
+
+		it('throws when distribution is not 100%', async () => {
+			await setExchangeRates()
+			await addEmployee()
+
+			try {
+				await payroll.determineAllocation(
+					[tokenA.address, tokenB.address, tokenC.address, tokenD.address],
+					[5000, 3000, 1000, 500],
+					{ from: employeeAddress }
+				)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Allocation was determined distribution != 100%')
 		})
 
 		it('succeeds', async () => {
@@ -132,25 +164,65 @@ contract('Payroll', accounts => {
 			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenD.address), 50e4)
 		})
 
-		// it('throws when salary is zero', async () => {
-		// 	try {
-		// 		await payroll.addEmployee.call(employeeAddress, 0)
-		// 	} catch (error) {
-		// 		return assertThrow(error)
-		// 	}
-		// 	throw new Error('Employee was added with salary as zero')
-		// })
+		it('throws when reallocation is not due', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
 
-		// it('succeeds', async () => {
-		// 	await payroll.addEmployee(employeeAddress, 1234)
-		// 	await payroll.setEmployeeSalary(0, 5678)
-		// 	assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 5678)
-		// })
+			try {
+				await determineAllocation()
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Allocation was determined before next due date')
+		})
+
+		it('succeeds reallocation', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+
+			await exchange.setExchangeRate(tokenA.address, 1, { from: oracleAddress })
+			await exchange.setExchangeRate(tokenB.address, 2, { from: oracleAddress })
+			await exchange.setExchangeRate(tokenC.address, 3, { from: oracleAddress })
+			await exchange.setExchangeRate(tokenD.address, 4, { from: oracleAddress })
+
+			await employeeStorage.mock_resetLatestTokenAllocation(employeeAddress)
+
+			await payroll.determineAllocation(
+				[tokenA.address, tokenC.address, tokenD.address],
+				[3000, 5000, 2000],
+				{ from: employeeAddress }
+			)
+
+			assert.equal(await employeeStorage.mock_getAllocatedTokenCount.call(employeeAddress), 3)
+			assert.equal(await employeeStorage.mock_getAllocatedTokenAddress.call(employeeAddress, 0), tokenA.address)
+			assert.equal(await employeeStorage.mock_getAllocatedTokenAddress.call(employeeAddress, 1), tokenC.address)
+			assert.equal(await employeeStorage.mock_getAllocatedTokenAddress.call(employeeAddress, 2), tokenD.address)
+			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenA.address), 3000)
+			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenC.address), 5000)
+			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenD.address), 2000)
+
+			assert.equal(await employeeStorage.mock_getPeggedTokenCount.call(employeeAddress), 4)
+			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 0), tokenA.address)
+			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 1), tokenB.address)
+			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 2), tokenC.address)
+			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 3), tokenD.address)
+			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenA.address), 2e18)
+			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenB.address), 2.5e18)
+			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenC.address), 6e18)
+			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenD.address), 4e18)
+
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenA.address), 300e18)
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenB.address), 0)
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenC.address), 166)
+			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenD.address), 100e4)
+		})
 	})
 
 	context('setting employee salary', () => {
 		it('throws when sender is not owner', async () => {
-			await payroll.addEmployee(employeeAddress, 1234)
+			await addEmployee()
 
 			try {
 				await payroll.setEmployeeSalary(0, 5678, { from: otherAddress })
@@ -179,7 +251,7 @@ contract('Payroll', accounts => {
 		// })
 
 		it('succeeds', async () => {
-			await payroll.addEmployee(employeeAddress, 1234)
+			await addEmployee()
 			await payroll.setEmployeeSalary(1, 5678)
 			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 5678)
 		})

@@ -4,6 +4,10 @@ import './EmployeeStorage.sol';
 
 contract EmployeeStorageMock is EmployeeStorage {
 
+	function mock_resetLatestTokenAllocation(address _address) {
+		getEmployee(_address).latestTokenAllocation = 0;
+	}
+
 	function mock_getCount() constant returns (uint) {
 		return employeeCount;
 	}
