@@ -34,6 +34,8 @@ contract IEmployeeStorage {
 	function getLatestPayday(address _address) constant returns (uint);
 	function getYearlyUSDSalary(address _address) constant returns (uint);
 
+	function getYearlyUSDSalariesTotal() constant returns (uint);
+
 	// Remove
 	function remove(address _address);
 }

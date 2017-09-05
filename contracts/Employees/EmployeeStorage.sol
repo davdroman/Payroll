@@ -23,6 +23,8 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	uint employeeCount;
 	mapping (uint => Employee) employeesById;
 	mapping (address => uint) employeeIdsByAddress;
+	uint yearlyUSDSalariesTotal;
+	mapping (address => uint) tokenSalariesTotal;
 
 	function getEmployee(address _address) internal constant returns (Employee storage employee) {
 		uint employeeId = employeeIdsByAddress[_address];
@@ -58,6 +60,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 		employeeCount++;
 		nextEmployeeId++;
+		yearlyUSDSalariesTotal += _yearlyUSDSalary;
 	}
 
 	// Set
@@ -143,7 +146,10 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function setYearlyUSDSalary(address _address, uint _salary) onlyOwner existingEmployeeAddress(_address) {
-		getEmployee(_address).yearlyUSDSalary = _salary;
+		Employee employee = getEmployee(_address);
+		yearlyUSDSalariesTotal -= employee.yearlyUSDSalary;
+		employee.yearlyUSDSalary = _salary;
+		yearlyUSDSalariesTotal += _salary;
 	}
 
 	// Get
@@ -200,6 +206,10 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		return getEmployee(_address).yearlyUSDSalary;
 	}
 
+	function getYearlyUSDSalariesTotal() constant returns (uint) {
+		return yearlyUSDSalariesTotal;
+	}
+
 	// Remove
 
 	function remove(address _address) onlyOwner existingEmployeeAddress(_address) {
@@ -216,6 +226,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		delete employee.peggedTokensIndex;
 		delete employee.latestTokenAllocation;
 		delete employee.latestPayday;
+		yearlyUSDSalariesTotal -= employee.yearlyUSDSalary;
 		delete employee.yearlyUSDSalary;
 		delete employee.exists;
 		employeeCount--;

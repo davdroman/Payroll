@@ -10,6 +10,7 @@ contract('EmployeeStorage', accounts => {
 	const tokenC = '0x0000000000000000000000000000000000000003'
 	const ownerAddress = accounts[0]
 	const employeeAddress = accounts[1]
+	const anotherEmployeeAddress = accounts[2]
 
 	beforeEach(async () => {
 		storage = await EmployeeStorage.new()
@@ -255,6 +256,37 @@ contract('EmployeeStorage', accounts => {
 			assert.equal(await storage.mock_getLatestTokenAllocation.call(employeeAddress), 0)
 			assert.equal(await storage.mock_getLatestPayday.call(employeeAddress), 0)
 			assert.equal(await storage.mock_getYearlyUSDSalary.call(employeeAddress), 0)
+		})
+	})
+
+	context('counting total yearly USD salaries', () => {
+		it('increases upon new employee', async () => {
+			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 0)
+			await storage.add(employeeAddress, 24000e18)
+			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 24000e18)
+			await storage.add(anotherEmployeeAddress, 2000e18)
+			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 26000e18)
+		})
+
+		it('increases upon salary raise', async () => {
+			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 0)
+			await storage.add(employeeAddress, 24000e18)
+			await storage.setYearlyUSDSalary(employeeAddress, 50000e18)
+			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 50000e18)
+		})
+
+		it('decreases upon salary cut', async () => {
+			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 0)
+			await storage.add(employeeAddress, 24000e18)
+			await storage.setYearlyUSDSalary(employeeAddress, 10000e18)
+			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 10000e18)
+		})
+
+		it('decreases upon employee removal', async () => {
+			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 0)
+			await storage.add(employeeAddress, 24000e18)
+			await storage.remove(employeeAddress)
+			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 0)
 		})
 	})
 })
