@@ -338,7 +338,7 @@ contract('Payroll', accounts => {
 			} catch (error) {
 				return assertThrow(error)
 			}
-			throw new Error('Employee was removed by other than owner')
+			throw new Error('Burnrate was fetched by other than owner')
 		})
 
 		it('succeeds', async () => {
@@ -353,6 +353,21 @@ contract('Payroll', accounts => {
 			assert.equal(await payroll.calculatePayrollBurnrate.call(), 2000e18)
 			await payroll.removeEmployee(2)
 			assert.equal(await payroll.calculatePayrollBurnrate.call(), 0)
+		})
+	})
+
+	context('calculating payroll runway', () => {
+		it('throws when sender is not the owner', async () => {
+			try {
+				await payroll.calculatePayrollRunway.call({ from: otherAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Runway was fetched by other than owner')
+		})
+
+		it('succeeds', async () => {
+			// TODO
 		})
 	})
 })

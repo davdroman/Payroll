@@ -3,6 +3,7 @@ pragma solidity ^0.4.11;
 import './IPayroll.sol';
 import '../Employees/IEmployeeStorage.sol';
 import '../Exchange/IExchange.sol';
+import '../Tokens/IERC20Token.sol';
 import '../Zeppelin/Ownable.sol';
 import '../Zeppelin/SafeMath.sol';
 
@@ -109,7 +110,33 @@ contract Payroll is IPayroll, Ownable {
 
 	// Days until the contract can run out of funds
 	function calculatePayrollRunway() onlyOwner constant returns (uint) {
+		uint shortestTokenRunwayInMonths;
+		
+		uint salaryTokensTotalCount = employeeStorage.getSalaryTokensTotalCount();
 
+		for (uint i; i < salaryTokensTotalCount; i++) {
+			address token = employeeStorage.getSalaryTokensTotalAddress(i);
+			uint tokenBalance = IERC20Token(token).balanceOf(this);
+			uint salaryTokenTotal = employeeStorage.getSalaryTokensTotalValue(token);
+
+			// if we don't have enough tokens for all of the salaries for that
+			// token, our runway is 0 days.
+			if (tokenBalance < salaryTokenTotal) {
+				return 0;
+			}
+
+			uint runwayInMonths = tokenBalance.div(salaryTokenTotal);
+
+			// if runway is 0 (unassigned), assign directly
+			// otherwise assign only if the new runway is lower.
+			if (shortestTokenRunwayInMonths == 0) {
+				shortestTokenRunwayInMonths = runwayInMonths;
+			} else if (runwayInMonths < shortestTokenRunwayInMonths) {
+				shortestTokenRunwayInMonths = runwayInMonths;
+			}
+		}
+
+		return shortestTokenRunwayInMonths.mul(30); // convert to days
 	}
 
 	function escapeHatch() onlyOwner {
