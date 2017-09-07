@@ -289,4 +289,39 @@ contract('EmployeeStorage', accounts => {
 			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 0)
 		})
 	})
+
+	context('counting total monthly salary tokens', () => {
+		it('changes after setting salary', async () => {
+			await storage.add(employeeAddress, 1234)
+			await storage.setSalaryToken(employeeAddress, tokenA, 2000)
+			await storage.setSalaryToken(employeeAddress, tokenB, 3500)
+			await storage.setSalaryToken(employeeAddress, tokenC, 5400)
+			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenA), 2000)
+			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenB), 3500)
+			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenC), 5400)
+
+			await storage.add(anotherEmployeeAddress, 1234)
+			await storage.setSalaryToken(anotherEmployeeAddress, tokenA, 2000)
+			await storage.setSalaryToken(anotherEmployeeAddress, tokenB, 0)
+			await storage.setSalaryToken(anotherEmployeeAddress, tokenC, 400)
+			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenA), 4000)
+			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenB), 3500)
+			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenC), 5800)
+
+			await storage.setSalaryToken(employeeAddress, tokenB, 0)
+			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenB), 0)
+		})
+
+		it('decreases upon employee removal', async () => {
+			await storage.add(employeeAddress, 1234)
+			await storage.setSalaryToken(employeeAddress, tokenA, 2000)
+			await storage.setSalaryToken(employeeAddress, tokenB, 3500)
+			await storage.setSalaryToken(employeeAddress, tokenC, 5400)
+			await storage.remove(employeeAddress)
+			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenA), 0)
+			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenB), 0)
+			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenC), 0)
+
+		})
+	})
 })

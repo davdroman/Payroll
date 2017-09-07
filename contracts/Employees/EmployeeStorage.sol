@@ -15,6 +15,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		mapping (address => uint) allocatedTokens; // parts per 10000 (100.00%)
 		address[] peggedTokensIndex;
 		mapping (address => uint) peggedTokens; // pegged exchange rate (18 decimals)
+		address[] salaryTokensIndex;
 		mapping (address => uint) salaryTokens; // calculated monthly salary from allocation, pegging, and yearly USD salary
 		uint latestTokenAllocation;
 		uint latestPayday;
@@ -79,18 +80,29 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
         _array.length--;
     }
 
+	function removeAddressFromArray(address[] storage _array, address _address) private {
+		for (uint i = 0; i < _array.length; i++) {
+			if (_array[i] == _address) {
+				remove(_array, i);
+				break;
+			}
+		}
+    }
+
+	function arrayContainsAddress(address[] _array, address _address) private constant returns (bool contained) {
+		for (uint i; i < _array.length; i++) {
+			if (_array[i] == _address) {
+				contained = true;
+			}
+		}
+	}
+
 	function setAllocatedToken(address _address, address _token, uint _distribution) onlyOwner existingEmployeeAddress(_address) {
 		Employee employee = getEmployee(_address);
 
 		// distribution being 0 means deletion
 		if (_distribution == 0) {
-			for (uint i = 0; i < employee.allocatedTokensIndex.length; i++) {
-				if (employee.allocatedTokensIndex[i] == _token) {
-					remove(employee.allocatedTokensIndex, i);
-					break;
-				}
-			}
-
+			removeAddressFromArray(employee.allocatedTokensIndex, _token);
 			delete employee.allocatedTokens[_token];
 		} else {
 			// insert in index only if new
@@ -107,10 +119,20 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 		for (uint i; i < employee.allocatedTokensIndex.length; i++) {
 			delete employee.allocatedTokens[employee.allocatedTokensIndex[i]];
-			delete employee.salaryTokens[employee.allocatedTokensIndex[i]];
+		}
+
+		for (uint a; a < employee.salaryTokensIndex.length; a++) {
+			address salaryToken = salaryTokensTotalIndex[a];
+
+			uint totalValue = salaryTokensTotal[salaryToken];
+			uint employeeValue = employee.salaryTokens[salaryToken];
+			salaryTokensTotal[salaryToken] = totalValue.sub(employeeValue);
+
+			delete employee.salaryTokens[salaryToken];
 		}
 
 		delete employee.allocatedTokensIndex;
+		delete employee.salaryTokensIndex;
 	}
 
 	function setPeggedToken(address _address, address _token, uint _value) onlyOwner existingEmployeeAddress(_address) {
@@ -118,13 +140,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 		// value being 0 means deletion
 		if (_value == 0) {
-			for (uint i = 0; i < employee.peggedTokensIndex.length; i++) {
-				if (employee.peggedTokensIndex[i] == _token) {
-					remove(employee.peggedTokensIndex, i);
-					break;
-				}
-			}
-
+			removeAddressFromArray(employee.peggedTokensIndex, _token);
 			delete employee.peggedTokens[_token];
 		} else {
 			// insert in index only if new
@@ -137,7 +153,31 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function setSalaryToken(address _address, address _token, uint _value) onlyOwner existingEmployeeAddress(_address) {
-		getEmployee(_address).salaryTokens[_token] = _value;
+		Employee employee = getEmployee(_address);
+
+		// adjust salary tokens total
+		uint totalValue = salaryTokensTotal[_token];
+		uint employeeValue = employee.salaryTokens[_token];
+		uint newTotalValue = totalValue.sub(employeeValue).add(_value);
+
+		salaryTokensTotal[_token] = newTotalValue;
+
+		if (!arrayContainsAddress(salaryTokensTotalIndex, _token)) {
+			salaryTokensTotalIndex.push(_token);
+		}
+
+		// value being 0 means deletion
+		if (_value == 0) {
+			removeAddressFromArray(employee.salaryTokensIndex, _token);
+			delete employee.salaryTokens[_token];
+		} else {
+			// insert in index only if new
+			if (!arrayContainsAddress(employee.salaryTokensIndex, _token)) {
+				employee.salaryTokensIndex.push(_token);
+			}
+
+			employee.salaryTokens[_token] = _value;
+		}
 	}
 
 	function setLatestTokenAllocation(address _address, uint _date) onlyOwner existingEmployeeAddress(_address) {
@@ -191,6 +231,14 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	function getPeggedTokenValue(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).peggedTokens[_token];
+	}
+
+	function getSalaryTokenCount(address _address) constant returns (uint) {
+		return getEmployee(_address).salaryTokensIndex.length;
+	}
+
+	function getSalaryTokenAddress(address _address, uint _index) constant returns (address) {
+		return getEmployee(_address).salaryTokensIndex[_index];
 	}
 
 	function getSalaryTokenValue(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {

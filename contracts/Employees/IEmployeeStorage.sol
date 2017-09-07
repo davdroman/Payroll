@@ -28,6 +28,8 @@ contract IEmployeeStorage {
 	function getPeggedTokenAddress(address _address, uint _index) constant returns (address);
 	function getPeggedTokenValue(address _address, address _token) constant returns (uint);
 
+	function getSalaryTokenCount(address _address) constant returns (uint);
+	function getSalaryTokenAddress(address _address, uint _index) constant returns (address);
 	function getSalaryTokenValue(address _address, address _token) constant returns (uint);
 
 	function getLatestTokenAllocation(address _address) constant returns (uint);
