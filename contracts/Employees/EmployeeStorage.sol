@@ -1,9 +1,11 @@
 pragma solidity ^0.4.11;
 
 import './IEmployeeStorage.sol';
+import '../Zeppelin/SafeMath.sol';
 import '../Zeppelin/Ownable.sol';
 
 contract EmployeeStorage is IEmployeeStorage, Ownable {
+	using SafeMath for uint;
 
 	struct Employee {
 		bool exists;
@@ -60,7 +62,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 		employeeCount++;
 		nextEmployeeId++;
-		yearlyUSDSalariesTotal += _yearlyUSDSalary;
+		yearlyUSDSalariesTotal = yearlyUSDSalariesTotal.add(_yearlyUSDSalary);
 	}
 
 	// Set
@@ -147,9 +149,9 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	function setYearlyUSDSalary(address _address, uint _salary) onlyOwner existingEmployeeAddress(_address) {
 		Employee employee = getEmployee(_address);
-		yearlyUSDSalariesTotal -= employee.yearlyUSDSalary;
+		yearlyUSDSalariesTotal = yearlyUSDSalariesTotal.sub(employee.yearlyUSDSalary);
 		employee.yearlyUSDSalary = _salary;
-		yearlyUSDSalariesTotal += _salary;
+		yearlyUSDSalariesTotal = yearlyUSDSalariesTotal.add(_salary);
 	}
 
 	// Get
@@ -226,7 +228,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		delete employee.peggedTokensIndex;
 		delete employee.latestTokenAllocation;
 		delete employee.latestPayday;
-		yearlyUSDSalariesTotal -= employee.yearlyUSDSalary;
+		yearlyUSDSalariesTotal = yearlyUSDSalariesTotal.sub(employee.yearlyUSDSalary);
 		delete employee.yearlyUSDSalary;
 		delete employee.exists;
 		employeeCount--;
