@@ -330,4 +330,29 @@ contract('Payroll', accounts => {
 			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 24000e18)
 		})
 	})
+
+	context('calculating payroll burnrate', () => {
+		it('throws when sender is not the owner', async () => {
+			try {
+				await payroll.calculatePayrollBurnrate.call({ from: otherAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee was removed by other than owner')
+		})
+
+		it('succeeds', async () => {
+			assert.equal(await payroll.calculatePayrollBurnrate.call(), 0)
+			await addEmployee()
+			assert.equal(await payroll.calculatePayrollBurnrate.call(), 2000e18)
+			await payroll.setEmployeeSalary(1, 30000e18)
+			assert.equal(await payroll.calculatePayrollBurnrate.call(), 2500e18)
+			await payroll.addEmployee(otherAddress, 24000e18)
+			assert.equal(await payroll.calculatePayrollBurnrate.call(), 4500e18)
+			await payroll.removeEmployee(1)
+			assert.equal(await payroll.calculatePayrollBurnrate.call(), 2000e18)
+			await payroll.removeEmployee(2)
+			assert.equal(await payroll.calculatePayrollBurnrate.call(), 0)
+		})
+	})
 })

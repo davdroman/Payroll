@@ -102,9 +102,9 @@ contract Payroll is IPayroll, Ownable {
 		yearlyUSDSalary = employeeStorage.getYearlyUSDSalary(accountAddress);
 	}
 
-	// Monthly usd amount spent in salaries
+	/// Monthly USD amount spent in salaries.
 	function calculatePayrollBurnrate() onlyOwner constant returns (uint) {
-
+		return employeeStorage.getYearlyUSDSalariesTotal().div(12);
 	}
 
 	// Days until the contract can run out of funds
