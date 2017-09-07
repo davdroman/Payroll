@@ -141,16 +141,21 @@ contract Payroll is IPayroll, Ownable {
 		return shortestTokenRunwayInMonths.mul(30); // convert to days
 	}
 
-	function escapeHatch() onlyOwner {
+	function escapeHatch(bool forced) onlyOwner {
 		uint salaryTokensTotalCount = employeeStorage.getSalaryTokensTotalCount();
+		bool tokenTransfersSucceeded = true;
 
 		for (uint i; i < salaryTokensTotalCount; i++) {
 			address token = employeeStorage.getSalaryTokensTotalAddress(i);
 			uint tokenBalance = ERC20(token).balanceOf(this);
-			ERC20(token).transfer(owner, tokenBalance);
+			if (tokenBalance > 0 && !ERC20(token).transfer(owner, tokenBalance)) {
+				tokenTransfersSucceeded = false;
+			}
 		}
 
-		selfdestruct(owner);
+		if (tokenTransfersSucceeded || forced) {
+			selfdestruct(owner);
+		}
 	}
 
 	// Employee functions

@@ -12,7 +12,7 @@ contract IPayroll {
 	function calculatePayrollBurnrate() constant returns (uint);
 	function calculatePayrollRunway() constant returns (uint);
 
-	function escapeHatch();
+	function escapeHatch(bool forced);
 
 	// Employee-only
 	function determineAllocation(address[] _tokens, uint[] _distribution);

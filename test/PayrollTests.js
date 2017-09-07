@@ -402,7 +402,7 @@ contract('Payroll', accounts => {
 	context('escape hatch', () => {
 		it('throws when sender is not the owner', async () => {
 			try {
-				await payroll.escapeHatch.call({ from: otherAddress })
+				await payroll.escapeHatch.call(true, { from: otherAddress })
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -431,7 +431,7 @@ contract('Payroll', accounts => {
 			assert.equal(await tokenC.balanceOf.call(payroll.address), 3300)
 			assert.equal(await tokenD.balanceOf.call(payroll.address), 50e4)
 
-			await payroll.escapeHatch()
+			await payroll.escapeHatch(false)
 
 			assert.equal(await web3.eth.getBalance(payroll.address), 0)
 			assert.equal(await tokenA.balanceOf.call(payroll.address), 0)
