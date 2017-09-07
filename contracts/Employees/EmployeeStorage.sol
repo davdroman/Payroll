@@ -69,6 +69,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	// Set
 
+	// TODO: refactor out into a library
 	function remove(address[] storage _array, uint _index) private {
         if (_index >= _array.length) return;
 
@@ -80,6 +81,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
         _array.length--;
     }
 
+	// TODO: refactor out into a library
 	function removeAddressFromArray(address[] storage _array, address _address) private {
 		for (uint i = 0; i < _array.length; i++) {
 			if (_array[i] == _address) {
@@ -89,6 +91,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		}
     }
 
+	// TODO: refactor out into a library
 	function arrayContainsAddress(address[] _array, address _address) private constant returns (bool contained) {
 		for (uint i; i < _array.length; i++) {
 			if (_array[i] == _address) {
@@ -100,83 +103,66 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	function setAllocatedToken(address _address, address _token, uint _distribution) onlyOwner existingEmployeeAddress(_address) {
 		Employee employee = getEmployee(_address);
 
-		// distribution being 0 means deletion
+		// adjust allocated tokens and keep index in sync
+		employee.allocatedTokens[_token] = _distribution;
+
 		if (_distribution == 0) {
 			removeAddressFromArray(employee.allocatedTokensIndex, _token);
-			delete employee.allocatedTokens[_token];
-		} else {
-			// insert in index only if new
-			if (employee.allocatedTokens[_token] == 0) {
-				employee.allocatedTokensIndex.push(_token);
-			}
-
-			employee.allocatedTokens[_token] = _distribution;
+		} else if (!arrayContainsAddress(employee.allocatedTokensIndex, _token)) {
+			employee.allocatedTokensIndex.push(_token);
 		}
 	}
 
 	function clearAllocatedAndSalaryTokens(address _address) onlyOwner existingEmployeeAddress(_address) {
 		Employee employee = getEmployee(_address);
 
-		for (uint i; i < employee.allocatedTokensIndex.length; i++) {
-			delete employee.allocatedTokens[employee.allocatedTokensIndex[i]];
+		uint allocatedTokensIndexLength = employee.allocatedTokensIndex.length;
+		for (uint a; a < allocatedTokensIndexLength; a++) {
+			setAllocatedToken(_address, employee.allocatedTokensIndex[0], 0);
 		}
 
-		for (uint a; a < employee.salaryTokensIndex.length; a++) {
-			address salaryToken = salaryTokensTotalIndex[a];
-
-			uint totalValue = salaryTokensTotal[salaryToken];
-			uint employeeValue = employee.salaryTokens[salaryToken];
-			salaryTokensTotal[salaryToken] = totalValue.sub(employeeValue);
-
-			delete employee.salaryTokens[salaryToken];
+		uint salaryTokensIndexLength = employee.salaryTokensIndex.length;
+		for (uint b; b < salaryTokensIndexLength; b++) {
+			setSalaryToken(_address, employee.salaryTokensIndex[0], 0);
 		}
-
-		delete employee.allocatedTokensIndex;
-		delete employee.salaryTokensIndex;
 	}
 
 	function setPeggedToken(address _address, address _token, uint _value) onlyOwner existingEmployeeAddress(_address) {
 		Employee employee = getEmployee(_address);
 
-		// value being 0 means deletion
+		// adjust pegged tokens and keep index in sync
+		employee.peggedTokens[_token] = _value;
+
 		if (_value == 0) {
 			removeAddressFromArray(employee.peggedTokensIndex, _token);
-			delete employee.peggedTokens[_token];
-		} else {
-			// insert in index only if new
-			if (employee.peggedTokens[_token] == 0) {
-				employee.peggedTokensIndex.push(_token);
-			}
-
-			employee.peggedTokens[_token] = _value;
+		} else if (!arrayContainsAddress(employee.peggedTokensIndex, _token)) {
+			employee.peggedTokensIndex.push(_token);
 		}
 	}
 
 	function setSalaryToken(address _address, address _token, uint _value) onlyOwner existingEmployeeAddress(_address) {
 		Employee employee = getEmployee(_address);
 
-		// adjust salary tokens total
+		// adjust salary tokens total and keep index in sync
 		uint totalValue = salaryTokensTotal[_token];
 		uint employeeValue = employee.salaryTokens[_token];
 		uint newTotalValue = totalValue.sub(employeeValue).add(_value);
 
 		salaryTokensTotal[_token] = newTotalValue;
 
-		if (!arrayContainsAddress(salaryTokensTotalIndex, _token)) {
+		if (newTotalValue == 0) {
+			removeAddressFromArray(salaryTokensTotalIndex, _token);
+		} else if (!arrayContainsAddress(salaryTokensTotalIndex, _token)) {
 			salaryTokensTotalIndex.push(_token);
 		}
 
-		// value being 0 means deletion
+		// assign new value and keep index in sync
+		employee.salaryTokens[_token] = _value;
+
 		if (_value == 0) {
 			removeAddressFromArray(employee.salaryTokensIndex, _token);
-			delete employee.salaryTokens[_token];
-		} else {
-			// insert in index only if new
-			if (!arrayContainsAddress(employee.salaryTokensIndex, _token)) {
-				employee.salaryTokensIndex.push(_token);
-			}
-
-			employee.salaryTokens[_token] = _value;
+		} else if (!arrayContainsAddress(employee.salaryTokensIndex, _token)) {
+			employee.salaryTokensIndex.push(_token);
 		}
 	}
 
