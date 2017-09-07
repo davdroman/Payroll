@@ -26,7 +26,8 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	mapping (uint => Employee) employeesById;
 	mapping (address => uint) employeeIdsByAddress;
 	uint yearlyUSDSalariesTotal;
-	mapping (address => uint) tokenSalariesTotal;
+	address[] salaryTokensTotalIndex;
+	mapping (address => uint) salaryTokensTotal;
 
 	function getEmployee(address _address) internal constant returns (Employee storage employee) {
 		uint employeeId = employeeIdsByAddress[_address];
@@ -210,6 +211,18 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	function getYearlyUSDSalariesTotal() constant returns (uint) {
 		return yearlyUSDSalariesTotal;
+	}
+
+	function getSalaryTokensTotalCount() constant returns (uint) {
+		return salaryTokensTotalIndex.length;
+	}
+
+	function getSalaryTokensTotalAddress(uint _index) constant returns (address) {
+		return salaryTokensTotalIndex[_index];
+	}
+
+	function getSalaryTokensTotalValue(address _token) constant returns (uint) {
+		return salaryTokensTotal[_token];
 	}
 
 	// Remove

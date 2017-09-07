@@ -36,6 +36,10 @@ contract IEmployeeStorage {
 
 	function getYearlyUSDSalariesTotal() constant returns (uint);
 
+	function getSalaryTokensTotalCount() constant returns (uint);
+	function getSalaryTokensTotalAddress(uint _index) constant returns (address);
+	function getSalaryTokensTotalValue(address _token) constant returns (uint);
+
 	// Remove
 	function remove(address _address);
 }
