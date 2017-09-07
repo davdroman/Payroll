@@ -6,7 +6,6 @@ contract('USDExchange', accounts => {
 	let tokenA
 	let tokenB
 	let tokenC
-
 	let exchange
 
 	const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -15,13 +14,10 @@ contract('USDExchange', accounts => {
 	const oracleAddressB = accounts[2]
 	const userAddress = accounts[3]
 
-	before(async () => {
-		tokenA = await ERC20Token.new('Test Token A', 'TTA', 18)
-		tokenB = await ERC20Token.new('Test Token B', 'TTB', 7)
-		tokenC = await ERC20Token.new('Test Token C', 'TTC', 0)
-	})
-
 	beforeEach(async () => {
+		tokenA = await ERC20Token.new(10000e18, 'Test Token A', 18, 'TTA')
+		tokenB = await ERC20Token.new(10000e7, 'Test Token B', 7, 'TTB')
+		tokenC = await ERC20Token.new(10000, 'Test Token C', 0, 'TTC')
 		exchange = await USDExchange.new(oracleAddressA)
 	})
 

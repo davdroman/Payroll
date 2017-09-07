@@ -2,7 +2,7 @@ pragma solidity ^0.4.11;
 
 import '../Zeppelin/SafeMath.sol';
 import '../Zeppelin/Ownable.sol';
-import '../Tokens/IERC20Token.sol';
+import '../Tokens/ERC20.sol';
 import './IExchange.sol';
 
 contract USDExchange is Ownable, IExchange {
@@ -26,7 +26,7 @@ contract USDExchange is Ownable, IExchange {
 		require(token != 0x0);
 		require(rate > 0);
 
-		uint decimals = IERC20Token(token).decimals();
+		uint decimals = ERC20(token).decimals();
 		return amount.mul(10**decimals).div(rate);
 	}
 

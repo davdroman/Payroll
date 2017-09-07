@@ -39,10 +39,10 @@ contract('Payroll', accounts => {
 	}
 
 	beforeEach(async () => {
-		tokenA = await ERC20Token.new('Test Token A', 'TTA', 18)
-		tokenB = await ERC20Token.new('Test Token B', 'TTB', 7)
-		tokenC = await ERC20Token.new('Test Token C', 'TTC', 0)
-		tokenD = await ERC20Token.new('Test Token D', 'TTD', 4)
+		tokenA = await ERC20Token.new(10000e18, 'Test Token A', 18, 'TTA')
+		tokenB = await ERC20Token.new(10000e7, 'Test Token B', 7, 'TTB')
+		tokenC = await ERC20Token.new(10000, 'Test Token C', 0, 'TTC')
+		tokenD = await ERC20Token.new(10000e4, 'Test Token D', 4, 'TTD')
 		employeeStorage = await EmployeeStorage.new()
 		exchange = await USDExchange.new(oracleAddress)
 		payroll = await Payroll.new(employeeStorage.address, exchange.address)

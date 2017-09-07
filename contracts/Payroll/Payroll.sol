@@ -3,7 +3,7 @@ pragma solidity ^0.4.11;
 import './IPayroll.sol';
 import '../Employees/IEmployeeStorage.sol';
 import '../Exchange/IExchange.sol';
-import '../Tokens/IERC20Token.sol';
+import '../Tokens/ERC20.sol';
 import '../Zeppelin/Ownable.sol';
 import '../Zeppelin/SafeMath.sol';
 
@@ -111,12 +111,12 @@ contract Payroll is IPayroll, Ownable {
 	// Days until the contract can run out of funds
 	function calculatePayrollRunway() onlyOwner constant returns (uint) {
 		uint shortestTokenRunwayInMonths;
-		
+
 		uint salaryTokensTotalCount = employeeStorage.getSalaryTokensTotalCount();
 
 		for (uint i; i < salaryTokensTotalCount; i++) {
 			address token = employeeStorage.getSalaryTokensTotalAddress(i);
-			uint tokenBalance = IERC20Token(token).balanceOf(this);
+			uint tokenBalance = ERC20(token).balanceOf(this);
 			uint salaryTokenTotal = employeeStorage.getSalaryTokensTotalValue(token);
 
 			// if we don't have enough tokens for all of the salaries for that
