@@ -398,4 +398,51 @@ contract('Payroll', accounts => {
 			assert.equal(await payroll.calculatePayrollRunway.call(), 60)
 		})
 	})
+
+	context('escape hatch', () => {
+		it('throws when sender is not the owner', async () => {
+			try {
+				await payroll.escapeHatch.call({ from: otherAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Escape hatch was performed by other than owner')
+		})
+
+		it('succeeds', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+
+			assert.equal(await tokenA.balanceOf.call(ownerAddress), 10000e18)
+			assert.equal(await tokenB.balanceOf.call(ownerAddress), 10000e7)
+			assert.equal(await tokenC.balanceOf.call(ownerAddress), 10000)
+			assert.equal(await tokenD.balanceOf.call(ownerAddress), 10000e4)
+
+			await web3.eth.sendTransaction({ from: ownerAddress, to: payroll.address, value: 5e18 })
+			await tokenA.transfer(payroll.address, 5000e18)
+			await tokenB.transfer(payroll.address, 2400e7)
+			await tokenC.transfer(payroll.address, 3300)
+			await tokenD.transfer(payroll.address, 50e4)
+
+			assert.equal(await web3.eth.getBalance(payroll.address), 5e18)
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 5000e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2400e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3300)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 50e4)
+
+			await payroll.escapeHatch()
+
+			assert.equal(await web3.eth.getBalance(payroll.address), 0)
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 0)
+
+			assert.equal(await tokenA.balanceOf.call(ownerAddress), 10000e18)
+			assert.equal(await tokenB.balanceOf.call(ownerAddress), 10000e7)
+			assert.equal(await tokenC.balanceOf.call(ownerAddress), 10000)
+			assert.equal(await tokenD.balanceOf.call(ownerAddress), 10000e4)
+		})
+	})
 })

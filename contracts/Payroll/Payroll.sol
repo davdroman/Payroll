@@ -40,6 +40,8 @@ contract Payroll is IPayroll, Ownable {
 		exchange = IExchange(_newExchange);
 	}
 
+	function () payable { }
+
 	// Company functions
 
 	/// Adds a new employee.
@@ -140,7 +142,15 @@ contract Payroll is IPayroll, Ownable {
 	}
 
 	function escapeHatch() onlyOwner {
+		uint salaryTokensTotalCount = employeeStorage.getSalaryTokensTotalCount();
 
+		for (uint i; i < salaryTokensTotalCount; i++) {
+			address token = employeeStorage.getSalaryTokensTotalAddress(i);
+			uint tokenBalance = ERC20(token).balanceOf(this);
+			ERC20(token).transfer(owner, tokenBalance);
+		}
+
+		selfdestruct(owner);
 	}
 
 	// Employee functions
