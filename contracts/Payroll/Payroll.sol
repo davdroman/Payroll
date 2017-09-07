@@ -108,7 +108,7 @@ contract Payroll is IPayroll, Ownable {
 		return employeeStorage.getYearlyUSDSalariesTotal().div(12);
 	}
 
-	// Days until the contract can run out of funds
+	/// Days until the contract can run out of funds.
 	function calculatePayrollRunway() onlyOwner constant returns (uint) {
 		uint shortestTokenRunwayInMonths;
 

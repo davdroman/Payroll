@@ -367,7 +367,35 @@ contract('Payroll', accounts => {
 		})
 
 		it('succeeds', async () => {
-			// TODO
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+
+			// Token salaries:
+			// A 500e18
+			// B 240e7
+			// C 33
+			// D 50e4
+
+			await tokenA.transfer(payroll.address, 499e18)
+			await tokenB.transfer(payroll.address, 239e7)
+			await tokenC.transfer(payroll.address, 32)
+			await tokenD.transfer(payroll.address, 49e4)
+			assert.equal(await payroll.calculatePayrollRunway.call(), 0)
+
+			await tokenA.transfer(payroll.address, 1e18)
+			await tokenB.transfer(payroll.address, 1e7)
+			await tokenC.transfer(payroll.address, 1)
+			await tokenD.transfer(payroll.address, 1e4)
+			assert.equal(await payroll.calculatePayrollRunway.call(), 30)
+
+			await tokenA.transfer(payroll.address, 5000e18)
+			await tokenB.transfer(payroll.address, 2400e7)
+			await tokenC.transfer(payroll.address, 3300)
+			assert.equal(await payroll.calculatePayrollRunway.call(), 30)
+
+			await tokenD.transfer(payroll.address, 50e4)
+			assert.equal(await payroll.calculatePayrollRunway.call(), 60)
 		})
 	})
 })
