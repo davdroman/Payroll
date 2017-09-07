@@ -209,19 +209,19 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		return getEmployee(_address).yearlyUSDSalary;
 	}
 
-	function getYearlyUSDSalariesTotal() constant returns (uint) {
+	function getYearlyUSDSalariesTotal() onlyOwner constant returns (uint) {
 		return yearlyUSDSalariesTotal;
 	}
 
-	function getSalaryTokensTotalCount() constant returns (uint) {
+	function getSalaryTokensTotalCount() onlyOwner constant returns (uint) {
 		return salaryTokensTotalIndex.length;
 	}
 
-	function getSalaryTokensTotalAddress(uint _index) constant returns (address) {
+	function getSalaryTokensTotalAddress(uint _index) onlyOwner constant returns (address) {
 		return salaryTokensTotalIndex[_index];
 	}
 
-	function getSalaryTokensTotalValue(address _token) constant returns (uint) {
+	function getSalaryTokensTotalValue(address _token) onlyOwner constant returns (uint) {
 		return salaryTokensTotal[_token];
 	}
 
