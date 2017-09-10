@@ -42,6 +42,8 @@ contract('EmployeeStorage', accounts => {
 			assert.equal(await storage.getCount.call(), 1)
 			assert.equal(await storage.getId.call(employeeAddress), 1)
 			assert.equal(await storage.getAddress.call(1), employeeAddress)
+			assert.equal(await storage.mock_getLatestTokenAllocation.call(employeeAddress), 0)
+			assert.isTrue(await storage.mock_getLatestPayday.call(employeeAddress) > 0)
 			assert.equal(await storage.getYearlyUSDSalary.call(employeeAddress), 1234)
 		})
 	})

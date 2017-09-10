@@ -2,7 +2,7 @@ const assertThrow = require('./helpers/assertThrow')
 const EmployeeStorage = artifacts.require('EmployeeStorageMock')
 const USDExchange = artifacts.require('USDExchange')
 const Payroll = artifacts.require('Payroll')
-const ERC20Token = artifacts.require('ERC20Token')
+const ERC20Token = artifacts.require('ERC20TokenMock')
 
 contract('Payroll', accounts => {
 	let tokenA
@@ -36,6 +36,13 @@ contract('Payroll', accounts => {
 			[5000, 3000, 1000, 1000],
 			{ from: employeeAddress }
 		)
+	}
+
+	const fundPayroll = async (tokenDValue) => {
+		await tokenA.transfer(payroll.address, 5000e18)
+		await tokenB.transfer(payroll.address, 2400e7)
+		await tokenC.transfer(payroll.address, 3300)
+		await tokenD.transfer(payroll.address, tokenDValue != null ? tokenDValue : 300e4)
 	}
 
 	beforeEach(async () => {
@@ -443,6 +450,195 @@ contract('Payroll', accounts => {
 			assert.equal(await tokenB.balanceOf.call(ownerAddress), 10000e7)
 			assert.equal(await tokenC.balanceOf.call(ownerAddress), 10000)
 			assert.equal(await tokenD.balanceOf.call(ownerAddress), 10000e4)
+		})
+	})
+
+	context('payday', () => {
+		it('throws when employee does not exist', async () => {
+			try {
+				await payroll.payday({ from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Inexistent employee got paid (wat)')
+		})
+
+		it('throws when employee is a newcomer', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+
+			try {
+				await payroll.payday({ from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee got paid right after creation')
+		})
+
+		it('succeeds', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+			await fundPayroll()
+			await employeeStorage.mock_resetLatestPayday(employeeAddress)
+
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 5000e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2400e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3300)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 300e4)
+
+			assert.equal(await tokenA.balanceOf.call(employeeAddress), 0)
+			assert.equal(await tokenB.balanceOf.call(employeeAddress), 0)
+			assert.equal(await tokenC.balanceOf.call(employeeAddress), 0)
+			assert.equal(await tokenD.balanceOf.call(employeeAddress), 0)
+
+			await payroll.payday({ from: employeeAddress })
+
+			// Token salaries:
+			// A 500e18
+			// B 240e7
+			// C 33
+			// D 50e4
+
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 4500e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2160e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3267)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 250e4)
+
+			assert.equal(await tokenA.balanceOf.call(employeeAddress), 500e18)
+			assert.equal(await tokenB.balanceOf.call(employeeAddress), 240e7)
+			assert.equal(await tokenC.balanceOf.call(employeeAddress), 33)
+			assert.equal(await tokenD.balanceOf.call(employeeAddress), 50e4)
+		})
+
+		it('succeeds when token funds are not sufficient, succeeds re-payment', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+			await fundPayroll(30e4)
+			await employeeStorage.mock_resetLatestPayday(employeeAddress)
+
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 5000e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2400e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3300)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 30e4)
+
+			assert.equal(await tokenA.balanceOf.call(employeeAddress), 0)
+			assert.equal(await tokenB.balanceOf.call(employeeAddress), 0)
+			assert.equal(await tokenC.balanceOf.call(employeeAddress), 0)
+			assert.equal(await tokenD.balanceOf.call(employeeAddress), 0)
+
+			await payroll.payday({ from: employeeAddress })
+
+			// Token salaries:
+			// A 500e18
+			// B 240e7
+			// C 33
+			// D 50e4
+
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 4500e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2160e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3267)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 30e4)
+
+			assert.equal(await tokenA.balanceOf.call(employeeAddress), 500e18)
+			assert.equal(await tokenB.balanceOf.call(employeeAddress), 240e7)
+			assert.equal(await tokenC.balanceOf.call(employeeAddress), 33)
+			assert.equal(await tokenD.balanceOf.call(employeeAddress), 0)
+
+			await tokenD.transfer(payroll.address, 20e4)
+			await payroll.payday({ from: employeeAddress })
+
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 4500e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2160e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3267)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 0)
+
+			assert.equal(await tokenA.balanceOf.call(employeeAddress), 500e18)
+			assert.equal(await tokenB.balanceOf.call(employeeAddress), 240e7)
+			assert.equal(await tokenC.balanceOf.call(employeeAddress), 33)
+			assert.equal(await tokenD.balanceOf.call(employeeAddress), 50e4)
+
+			try {
+				await payroll.payday({ from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee got double paid')
+		})
+
+		it('succeeds when token is faulty, succeeds re-payment', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+			await fundPayroll()
+			await employeeStorage.mock_resetLatestPayday(employeeAddress)
+
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 5000e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2400e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3300)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 300e4)
+
+			assert.equal(await tokenA.balanceOf.call(employeeAddress), 0)
+			assert.equal(await tokenB.balanceOf.call(employeeAddress), 0)
+			assert.equal(await tokenC.balanceOf.call(employeeAddress), 0)
+			assert.equal(await tokenD.balanceOf.call(employeeAddress), 0)
+
+			await tokenD.mock_setShouldSucceedTransfers(false)
+			await payroll.payday({ from: employeeAddress })
+
+			// Token salaries:
+			// A 500e18
+			// B 240e7
+			// C 33
+			// D 50e4
+
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 4500e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2160e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3267)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 300e4)
+
+			assert.equal(await tokenA.balanceOf.call(employeeAddress), 500e18)
+			assert.equal(await tokenB.balanceOf.call(employeeAddress), 240e7)
+			assert.equal(await tokenC.balanceOf.call(employeeAddress), 33)
+			assert.equal(await tokenD.balanceOf.call(employeeAddress), 0)
+
+			await tokenD.mock_setShouldSucceedTransfers(true)
+			await payroll.payday({ from: employeeAddress })
+
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 4500e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2160e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3267)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 250e4)
+
+			assert.equal(await tokenA.balanceOf.call(employeeAddress), 500e18)
+			assert.equal(await tokenB.balanceOf.call(employeeAddress), 240e7)
+			assert.equal(await tokenC.balanceOf.call(employeeAddress), 33)
+			assert.equal(await tokenD.balanceOf.call(employeeAddress), 50e4)
+
+			try {
+				await payroll.payday({ from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee got double paid')
+		})
+
+		it('throws after successful payday', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+			await fundPayroll()
+			await employeeStorage.mock_resetLatestPayday(employeeAddress)
+			await payroll.payday({ from: employeeAddress })
+
+			try {
+				await payroll.payday({ from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Employee got double paid')
 		})
 	})
 })

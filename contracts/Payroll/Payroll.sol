@@ -13,6 +13,9 @@ contract Payroll is IPayroll, Ownable {
 	IEmployeeStorage public employeeStorage;
 	IExchange public exchange;
 
+	uint constant public allocationFrequency = 180 days; // 6 months
+	uint constant public paydayFrequency = 30 days; // 1 month
+
 	// Modifiers
 
 	modifier validAddress(address _address) {
@@ -179,7 +182,7 @@ contract Payroll is IPayroll, Ownable {
 
 		// check latest reallocation was > 6 months ago
 		uint latestTokenAllocation = employeeStorage.getLatestTokenAllocation(employeeAddress);
-		assert(now.sub(latestTokenAllocation) >= 182 days);
+		assert(now.sub(latestTokenAllocation) >= allocationFrequency);
 
 		// clean up old allocation and salary
 		employeeStorage.clearAllocatedAndSalaryTokens(employeeAddress);
@@ -205,6 +208,50 @@ contract Payroll is IPayroll, Ownable {
 	}
 
 	function payday() {
+		address employeeAddress = msg.sender;
 
+		// check if payday is due
+		uint latestPayday = employeeStorage.getLatestPayday(employeeAddress);
+		assert(now.sub(latestPayday) >= paydayFrequency);
+
+		// fetch and pay
+		uint salaryTokenCount = employeeStorage.getSalaryTokenCount(employeeAddress);
+		bool salaryFullyPaid = true;
+
+		for (uint i; i < salaryTokenCount; i++) {
+			// fetch token address
+			address token = employeeStorage.getSalaryTokenAddress(employeeAddress, i);
+
+			// check latest token payday, skip if not due
+			uint latestTokenPayday = employeeStorage.getLatestTokenPayday(employeeAddress, token);
+
+			if (now.sub(latestTokenPayday) < paydayFrequency) {
+				continue;
+			}
+
+			// check funds for token are sufficient, skip if not
+			uint tokenBalance = ERC20(token).balanceOf(this);
+			uint tokenSalary = employeeStorage.getSalaryTokenValue(employeeAddress, token);
+
+			if (tokenBalance < tokenSalary) {
+				salaryFullyPaid = false;
+				continue;
+			}
+
+			// pay employee
+			employeeStorage.setLatestTokenPayday(employeeAddress, token, now); // set date before payment to prevent re-entrancy attacks
+			if (!ERC20(token).transfer(employeeAddress, tokenSalary)) {
+				salaryFullyPaid = false;
+				// payment failed, revert back to previous payday date
+				// for the employee to have another chance to get paid
+				// some other time
+				employeeStorage.setLatestTokenPayday(employeeAddress, token, latestTokenPayday);
+			}
+		}
+
+		// seal the global payday date if all payments succeeded
+		if (salaryFullyPaid) {
+			employeeStorage.setLatestPayday(employeeAddress, now);
+		}
 	}
 }

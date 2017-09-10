@@ -8,6 +8,10 @@ contract EmployeeStorageMock is EmployeeStorage {
 		getEmployee(_address).latestTokenAllocation = 0;
 	}
 
+	function mock_resetLatestPayday(address _address) {
+		getEmployee(_address).latestPayday = 0;
+	}
+
 	function mock_getCount() constant returns (uint) {
 		return employeeCount;
 	}

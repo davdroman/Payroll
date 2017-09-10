@@ -62,6 +62,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		employeesById[nextEmployeeId].exists = true;
 		employeesById[nextEmployeeId].id = nextEmployeeId;
 		employeesById[nextEmployeeId].accountAddress = _address;
+		employeesById[nextEmployeeId].latestPayday = now;
 		employeesById[nextEmployeeId].yearlyUSDSalary = _yearlyUSDSalary;
 
 		employeeIdsByAddress[_address] = nextEmployeeId;
