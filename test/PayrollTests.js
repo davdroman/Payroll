@@ -416,7 +416,7 @@ contract('Payroll', accounts => {
 			throw new Error('Escape hatch was performed by other than owner')
 		})
 
-		it('succeeds', async () => {
+		it('succeeds with healthy tokens, non-forced', async () => {
 			await setExchangeRates()
 			await addEmployee()
 			await determineAllocation()
@@ -450,6 +450,122 @@ contract('Payroll', accounts => {
 			assert.equal(await tokenB.balanceOf.call(ownerAddress), 10000e7)
 			assert.equal(await tokenC.balanceOf.call(ownerAddress), 10000)
 			assert.equal(await tokenD.balanceOf.call(ownerAddress), 10000e4)
+		})
+
+		it('succeeds with healthy tokens, forced', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+
+			assert.equal(await tokenA.balanceOf.call(ownerAddress), 10000e18)
+			assert.equal(await tokenB.balanceOf.call(ownerAddress), 10000e7)
+			assert.equal(await tokenC.balanceOf.call(ownerAddress), 10000)
+			assert.equal(await tokenD.balanceOf.call(ownerAddress), 10000e4)
+
+			await web3.eth.sendTransaction({ from: ownerAddress, to: payroll.address, value: 5e18 })
+			await tokenA.transfer(payroll.address, 5000e18)
+			await tokenB.transfer(payroll.address, 2400e7)
+			await tokenC.transfer(payroll.address, 3300)
+			await tokenD.transfer(payroll.address, 50e4)
+
+			assert.equal(await web3.eth.getBalance(payroll.address), 5e18)
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 5000e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2400e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3300)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 50e4)
+
+			await payroll.escapeHatch(true)
+
+			assert.equal(await web3.eth.getBalance(payroll.address), 0)
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 0)
+
+			assert.equal(await tokenA.balanceOf.call(ownerAddress), 10000e18)
+			assert.equal(await tokenB.balanceOf.call(ownerAddress), 10000e7)
+			assert.equal(await tokenC.balanceOf.call(ownerAddress), 10000)
+			assert.equal(await tokenD.balanceOf.call(ownerAddress), 10000e4)
+		})
+
+		it('succeeds with faulty tokens, non-forced', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+
+			assert.equal(await tokenA.balanceOf.call(ownerAddress), 10000e18)
+			assert.equal(await tokenB.balanceOf.call(ownerAddress), 10000e7)
+			assert.equal(await tokenC.balanceOf.call(ownerAddress), 10000)
+			assert.equal(await tokenD.balanceOf.call(ownerAddress), 10000e4)
+
+			await web3.eth.sendTransaction({ from: ownerAddress, to: payroll.address, value: 5e18 })
+			await tokenA.transfer(payroll.address, 5000e18)
+			await tokenB.transfer(payroll.address, 2400e7)
+			await tokenC.transfer(payroll.address, 3300)
+			await tokenD.transfer(payroll.address, 50e4)
+
+			assert.equal(await web3.eth.getBalance(payroll.address), 5e18)
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 5000e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2400e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3300)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 50e4)
+
+			await tokenD.mock_setShouldSucceedTransfers(false)
+			await payroll.escapeHatch(false)
+
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 50e4)
+
+			assert.equal(await tokenA.balanceOf.call(ownerAddress), 10000e18)
+			assert.equal(await tokenB.balanceOf.call(ownerAddress), 10000e7)
+			assert.equal(await tokenC.balanceOf.call(ownerAddress), 10000)
+			assert.equal(await tokenD.balanceOf.call(ownerAddress), 9950e4)
+
+			await tokenD.mock_setShouldSucceedTransfers(true)
+			await payroll.escapeHatch(false)
+
+			assert.equal(await web3.eth.getBalance(payroll.address), 0)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenD.balanceOf.call(ownerAddress), 10000e4)
+		})
+
+		it('succeeds with faulty tokens, forced', async () => {
+			await setExchangeRates()
+			await addEmployee()
+			await determineAllocation()
+
+			assert.equal(await tokenA.balanceOf.call(ownerAddress), 10000e18)
+			assert.equal(await tokenB.balanceOf.call(ownerAddress), 10000e7)
+			assert.equal(await tokenC.balanceOf.call(ownerAddress), 10000)
+			assert.equal(await tokenD.balanceOf.call(ownerAddress), 10000e4)
+
+			await web3.eth.sendTransaction({ from: ownerAddress, to: payroll.address, value: 5e18 })
+			await tokenA.transfer(payroll.address, 5000e18)
+			await tokenB.transfer(payroll.address, 2400e7)
+			await tokenC.transfer(payroll.address, 3300)
+			await tokenD.transfer(payroll.address, 50e4)
+
+			assert.equal(await web3.eth.getBalance(payroll.address), 5e18)
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 5000e18)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 2400e7)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 3300)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 50e4)
+
+			await tokenD.mock_setShouldSucceedTransfers(false)
+			await payroll.escapeHatch(true)
+
+			assert.equal(await web3.eth.getBalance(payroll.address), 0)
+			assert.equal(await tokenA.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenB.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenC.balanceOf.call(payroll.address), 0)
+			assert.equal(await tokenD.balanceOf.call(payroll.address), 50e4)
+
+			assert.equal(await tokenA.balanceOf.call(ownerAddress), 10000e18)
+			assert.equal(await tokenB.balanceOf.call(ownerAddress), 10000e7)
+			assert.equal(await tokenC.balanceOf.call(ownerAddress), 10000)
+			assert.equal(await tokenD.balanceOf.call(ownerAddress), 9950e4)
 		})
 	})
 
