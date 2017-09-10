@@ -14,4 +14,4 @@ Some minor things I left out for lack of time.
 
 - [ ] Refactor index arrays + mappings into a common structure, since it's a common pattern in storage.
 - [ ] Make `USDExchange` agnostic and have a base ERC20 token from which other tokens are converted instead.
-- [ ] Add a ERC20 wrapper for Ether.
+- [ ] Add an ERC20 wrapper for Ether.
