@@ -4,9 +4,9 @@ A modular, ERC20 token payroll smart contract.
 
 ### Structure
 
-- `Payroll`: the main interface, where companies manage their employees and employees can determine their own token allocations and get paid when due.
+- `Payroll`: the main interface, where companies manage their employees and employees can determine their own token allocation and get paid when due.
 - `EmployeeStorage`: separate storage contract holding all relevant employee information, owned and restricted in use to `Payroll`.
-- `USDExchange`: smart contract determining the prices for different tokens at a specific time, from which `Payroll` draws information to calculate salaries.
+- `USDExchange`: smart contract determining the most recent prices for different tokens, from which `Payroll` draws information to calculate employee salaries.
 
 ### Possible improvements
 
