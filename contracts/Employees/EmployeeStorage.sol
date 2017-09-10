@@ -11,6 +11,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		bool exists;
 		uint id;
 		address accountAddress;
+
 		address[] allocatedTokensIndex;
 		mapping (address => uint) allocatedTokens; // parts per 10000 (100.00%)
 		address[] peggedTokensIndex;
@@ -18,7 +19,10 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		address[] salaryTokensIndex;
 		mapping (address => uint) salaryTokens; // calculated monthly salary from allocation, pegging, and yearly USD salary
 		uint latestTokenAllocation;
+
 		uint latestPayday;
+		mapping (address => uint) latestTokenPaydays; // latest paydays on a per-token basis
+
 		uint yearlyUSDSalary; // 18 decimals
 	}
 
@@ -174,6 +178,10 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		getEmployee(_address).latestPayday = _date;
 	}
 
+	function setLatestTokenPayday(address _address, address _token, uint _date) onlyOwner existingEmployeeAddress(_address) {
+		getEmployee(_address).latestTokenPaydays[_token] = _date;
+	}
+
 	function setYearlyUSDSalary(address _address, uint _salary) onlyOwner existingEmployeeAddress(_address) {
 		Employee employee = getEmployee(_address);
 		yearlyUSDSalariesTotal = yearlyUSDSalariesTotal.sub(employee.yearlyUSDSalary);
@@ -237,6 +245,10 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	function getLatestPayday(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).latestPayday;
+	}
+
+	function getLatestTokenPayday(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+		return getEmployee(_address).latestTokenPaydays[_token];
 	}
 
 	function getYearlyUSDSalary(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {

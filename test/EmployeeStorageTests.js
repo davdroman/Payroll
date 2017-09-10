@@ -201,6 +201,23 @@ contract('EmployeeStorage', accounts => {
 		})
 	})
 
+	context('setting latest token payday date', () => {
+		it('throws when sender is not owner', async () => {
+			try {
+				await storage.setLatestTokenPayday.call(employeeAddress, tokenA, 100, { from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Setting latest token payday date was done by other than owner')
+		})
+
+		it('succeeds', async () => {
+			await storage.add(employeeAddress, 1234)
+			await storage.setLatestTokenPayday(employeeAddress, tokenA, 100)
+			assert.equal(await storage.getLatestTokenPayday.call(employeeAddress, tokenA), 100)
+		})
+	})
+
 	context('setting yearly USD salary', () => {
 		it('throws when sender is not owner', async () => {
 			try {

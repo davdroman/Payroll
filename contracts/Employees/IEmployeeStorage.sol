@@ -13,6 +13,7 @@ contract IEmployeeStorage {
 
 	function setLatestTokenAllocation(address _address, uint _date);
 	function setLatestPayday(address _address, uint _date);
+	function setLatestTokenPayday(address _address, address _token, uint _date);
 	function setYearlyUSDSalary(address _address, uint _salary);
 
 	// Get
@@ -34,6 +35,7 @@ contract IEmployeeStorage {
 
 	function getLatestTokenAllocation(address _address) constant returns (uint);
 	function getLatestPayday(address _address) constant returns (uint);
+	function getLatestTokenPayday(address _address, address _token) constant returns (uint);
 	function getYearlyUSDSalary(address _address) constant returns (uint);
 
 	function getYearlyUSDSalariesTotal() constant returns (uint);
