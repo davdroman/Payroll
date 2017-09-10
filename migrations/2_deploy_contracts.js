@@ -1,31 +1,29 @@
-// const Ownable = artifacts.require('Ownable.sol')
-// const HumanStandardToken = artifacts.require('HumanStandardToken.sol')
-// const USDExchange = artifacts.require('USDExchange.sol')
-// const EmployeesController = artifacts.require('EmployeesController.sol')
-// const Payroll = artifacts.require('Payroll.sol')
-
-// const liveNetworks = ['kovan', 'ropsten']
-//
-// const PersonnelLib = artifacts.require('PersonnelLib.sol')
-// const PersonnelLibMock = artifacts.require('PersonnelLibMock.sol')
-
 module.exports = (deployer, network) => {
-	// const isLive = liveNetworks.indexOf(network) > -1
-	//
-	// deployer.deploy(PersonnelLib)
-	//
-	// if (!isLive) {
-	// 	deployer.link(PersonnelLib, PersonnelLibMock)
-	// 	deployer.deploy(PersonnelLibMock)
-	// }
+	if (network == 'testing') { return }
 
-	// deployer.deploy(Ownable)
-	// deployer.link(Ownable, Payroll)
-	// deployer.link(Ownable, EmployeesController)
-	// deployer.link(IHumanStandardToken, USDExchange)
-	// deployer.deploy(Payroll)
-	// deployer.deploy(EmployeesController)
-	// deployer.deploy(StandardToken);
-	// deployer.deploy(HumanStandardToken);
-	// deployer.deploy(USDExchange);
+	const liveNetworks = [
+		'kovan',
+		'ropsten'
+	]
+
+	const ERC20TokenFactory = artifacts.require('ERC20TokenFactory.sol')
+	const USDExchange = artifacts.require('USDExchange.sol')
+	const Payroll = artifacts.require('Payroll.sol')
+
+	const isLive = liveNetworks.indexOf(network) > -1
+
+	// if deploying to test network, deploy test tokens too
+	if (!isLive) {
+		deployer.deploy(ERC20TokenFactory).then(() => {
+			return ERC20TokenFactory.at(ERC20TokenFactory.address).create(10000e18, 'Test Token A', 18, 'TTA')
+		}).then(() => {
+			return ERC20TokenFactory.at(ERC20TokenFactory.address).create(10000e5, 'Test Token B', 5, 'TTB')
+		}).then(() => {
+			return ERC20TokenFactory.at(ERC20TokenFactory.address).create(10000, 'Test Token C', 0, 'TTC')
+		})
+	}
+
+	deployer.deploy(USDExchange, web3.eth.coinbase).then((exchange) => {
+		return deployer.deploy(Payroll, USDExchange.address)
+	})
 }

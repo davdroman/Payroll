@@ -1,7 +1,7 @@
 pragma solidity ^0.4.11;
 
 import './IPayroll.sol';
-import '../Employees/IEmployeeStorage.sol';
+import '../Employees/EmployeeStorage.sol';
 import '../Exchange/IExchange.sol';
 import '../Tokens/ERC20.sol';
 import '../Zeppelin/Ownable.sol';
@@ -30,8 +30,8 @@ contract Payroll is IPayroll, Ownable {
 
 	// Init/setters
 
-	function Payroll(address _employeeStorage, address _exchange) {
-		setEmployeeStorage(_employeeStorage);
+	function Payroll(address _exchange) {
+		setEmployeeStorage(new EmployeeStorage());
 		setExchange(_exchange);
 	}
 

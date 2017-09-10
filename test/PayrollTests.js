@@ -52,8 +52,9 @@ contract('Payroll', accounts => {
 		tokenD = await ERC20Token.new(10000e4, 'Test Token D', 4, 'TTD')
 		employeeStorage = await EmployeeStorage.new()
 		exchange = await USDExchange.new(oracleAddress)
-		payroll = await Payroll.new(employeeStorage.address, exchange.address)
+		payroll = await Payroll.new(exchange.address)
 		await employeeStorage.transferOwnership(payroll.address)
+		await payroll.setEmployeeStorage(employeeStorage.address)
 	})
 
 	context('adding employee', () => {
