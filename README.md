@@ -13,5 +13,5 @@ A modular, ERC20 token payroll smart contract.
 Some minor things I left out for lack of time.
 
 - [ ] Refactor index arrays + mappings into a common structure, since it's a common pattern in storage.
-- [ ] Make `USDExchange` agnostic and have a base ERC20 token from which other tokens are converted instead.
+- [ ] Make `USDExchange` currency agnostic and formalize a `USD` ERC20 token from which other tokens can be converted.
 - [ ] Add an ERC20 wrapper for Ether.
