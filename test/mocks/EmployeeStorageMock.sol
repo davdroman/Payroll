@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import './EmployeeStorage.sol';
+import '../../contracts/Employees/EmployeeStorage.sol';
 
 contract EmployeeStorageMock is EmployeeStorage {
 
