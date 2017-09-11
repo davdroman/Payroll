@@ -1,16 +1,11 @@
 module.exports = (deployer, network) => {
 	if (network == 'testing') { return }
 
-	const liveNetworks = [
-		'kovan',
-		'ropsten'
-	]
-
 	const ERC20TokenFactory = artifacts.require('ERC20TokenFactory.sol')
 	const USDExchange = artifacts.require('USDExchange.sol')
 	const Payroll = artifacts.require('Payroll.sol')
 
-	const isLive = liveNetworks.indexOf(network) > -1
+	const isLive = (network == 'live')
 
 	// if deploying to test network, deploy test tokens too
 	if (!isLive) {
