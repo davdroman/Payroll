@@ -2,7 +2,7 @@
 
 A modular, ERC20 token payroll smart contract.
 
-To keep things consistent it intentionally doesn't support ETH out of the box, just tokens. To get paid in ETH, any ERC20 wrapper for ETH will do the job (namely 0x's WETH), and hopefully no wrapper will be needed when ETH becomes an ERC20 token itself. [More info](weth.io).
+To keep things consistent it intentionally doesn't support ETH out of the box, just tokens. To get paid in ETH, any ERC20 wrapper for ETH will do the job (namely 0x's WETH), and hopefully no wrapper will be needed when ETH becomes an ERC20 token itself. [More info](https://weth.io).
 
 ### Structure
 
