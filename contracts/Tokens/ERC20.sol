@@ -3,7 +3,7 @@ pragma solidity ^0.4.11;
 contract ERC20 {
     uint256 public totalSupply;
 
-	string public name;
+    string public name;
     uint8 public decimals;
     string public symbol;
     string public version;
