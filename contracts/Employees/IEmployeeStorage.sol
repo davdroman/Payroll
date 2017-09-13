@@ -5,6 +5,8 @@ contract IEmployeeStorage {
 	function add(address _address, uint _yearlyUSDSalary);
 
 	// Set
+	function setAddress(address _address, address _newAddress);
+
 	function setAllocatedToken(address _address, address _token, uint _distribution);
 	function setPeggedToken(address _address, address _token, uint _value);
 	function setSalaryToken(address _address, address _token, uint _value);

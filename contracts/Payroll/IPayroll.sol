@@ -3,6 +3,7 @@ pragma solidity ^0.4.11;
 contract IPayroll {
 	// Company-only
 	function addEmployee(address _address, uint _yearlyUSDSalary);
+	function setEmployeeAddress(uint _id, address _address);
 	function setEmployeeSalary(uint _id, uint _yearlyUSDSalary);
 	function removeEmployee(uint _id);
 	function getEmployeeCount() constant returns (uint);
@@ -15,6 +16,7 @@ contract IPayroll {
 	function escapeHatch(bool forced);
 
 	// Employee-only
+	function changeAddress(address _address);
 	function determineAllocation(address[] _tokens, uint[] _distribution);
 	function payday();
 }

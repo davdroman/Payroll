@@ -58,6 +58,11 @@ contract Payroll is IPayroll, Ownable {
 		employeeStorage.add(_address, _yearlyUSDSalary);
 	}
 
+	function setEmployeeAddress(uint _id, address _address) onlyOwner validAddress(_address) {
+		address employeeAddress = employeeStorage.getAddress(_id);
+		employeeStorage.setAddress(employeeAddress, _address);
+	}
+
 	function setEmployeeSalary(uint _id, uint _yearlyUSDSalary) onlyOwner higherThanZeroUInt(_yearlyUSDSalary) {
 		address employeeAddress = employeeStorage.getAddress(_id);
 		employeeStorage.setYearlyUSDSalary(employeeAddress, _yearlyUSDSalary);
@@ -162,6 +167,11 @@ contract Payroll is IPayroll, Ownable {
 	}
 
 	// Employee functions
+
+	function changeAddress(address _address) validAddress(_address) {
+		address employeeAddress = msg.sender;
+		employeeStorage.setAddress(employeeAddress, _address);
+	}
 
 	/// Determines allocation of ERC20 tokens as an employee's salary.
 	///

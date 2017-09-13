@@ -48,6 +48,27 @@ contract('EmployeeStorage', accounts => {
 		})
 	})
 
+	context('setting address', () => {
+		it('throws when sender is not owner', async () => {
+			await storage.add(employeeAddress, 1000)
+
+			try {
+				await storage.setAddress.call(employeeAddress, anotherEmployeeAddress, { from: employeeAddress })
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Address was changed by other than owner')
+		})
+
+		it('succeeds', async () => {
+			await storage.add(employeeAddress, 1234)
+			await storage.setAddress(employeeAddress, anotherEmployeeAddress)
+			assert.equal(await storage.getAddress.call(1), anotherEmployeeAddress)
+			assert.equal(await storage.getId.call(anotherEmployeeAddress), 1)
+			assert.equal(await storage.mock_getId.call(employeeAddress), 0)
+		})
+	})
+
 	context('setting allocation', () => {
 		it('throws when sender is not owner', async () => {
 			try {

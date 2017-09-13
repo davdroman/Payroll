@@ -105,6 +105,13 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		}
 	}
 
+	function setAddress(address _address, address _newAddress) onlyOwner existingEmployeeAddress(_address) {
+		Employee employee = getEmployee(_address);
+		delete employeeIdsByAddress[_address];
+		employee.accountAddress = _newAddress;
+		employeeIdsByAddress[_newAddress] = employee.id;
+	}
+
 	function setAllocatedToken(address _address, address _token, uint _distribution) onlyOwner existingEmployeeAddress(_address) {
 		Employee employee = getEmployee(_address);
 
