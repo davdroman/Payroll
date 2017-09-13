@@ -74,7 +74,6 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	// Set
 
-	// TODO: refactor out into a library
 	function remove(address[] storage _array, uint _index) private {
         if (_index >= _array.length) return;
 
@@ -86,7 +85,6 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
         _array.length--;
     }
 
-	// TODO: refactor out into a library
 	function removeAddressFromArray(address[] storage _array, address _address) private {
 		for (uint i = 0; i < _array.length; i++) {
 			if (_array[i] == _address) {
@@ -96,7 +94,6 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		}
     }
 
-	// TODO: refactor out into a library
 	function arrayContainsAddress(address[] _array, address _address) private constant returns (bool contained) {
 		for (uint i; i < _array.length; i++) {
 			if (_array[i] == _address) {
