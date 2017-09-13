@@ -11,7 +11,7 @@ module.exports = {
 		testing: {
 			host: "localhost",
 			port: 8555,
-			network_id: "*",
+			network_id: '*',
 			gasPrice: 0x01
 		}
 	}
