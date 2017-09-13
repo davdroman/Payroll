@@ -102,7 +102,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		}
 	}
 
-	function setAddress(address _address, address _newAddress) onlyOwner existingEmployeeAddress(_address) {
+	function setAddress(address _address, address _newAddress) onlyOwner existingEmployeeAddress(_address) notExistingEmployeeAddress(_newAddress) {
 		Employee employee = getEmployee(_address);
 		delete employeeIdsByAddress[_address];
 		employee.accountAddress = _newAddress;

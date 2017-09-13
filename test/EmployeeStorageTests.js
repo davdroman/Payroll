@@ -10,7 +10,7 @@ contract('EmployeeStorage', accounts => {
 	const tokenC = '0x0000000000000000000000000000000000000003'
 	const ownerAddress = accounts[0]
 	const employeeAddress = accounts[1]
-	const anotherEmployeeAddress = accounts[2]
+	const employeeAddressB = accounts[2]
 
 	beforeEach(async () => {
 		storage = await EmployeeStorage.new()
@@ -53,18 +53,30 @@ contract('EmployeeStorage', accounts => {
 			await storage.add(employeeAddress, 1000)
 
 			try {
-				await storage.setAddress.call(employeeAddress, anotherEmployeeAddress, { from: employeeAddress })
+				await storage.setAddress.call(employeeAddress, employeeAddressB, { from: employeeAddress })
 			} catch (error) {
 				return assertThrow(error)
 			}
 			throw new Error('Address was changed by other than owner')
 		})
 
+		it('throws when new address belongs to existing employee', async () => {
+			await storage.add(employeeAddress, 1000)
+			await storage.add(employeeAddressB, 1500)
+
+			try {
+				await storage.setAddress.call(employeeAddress, employeeAddressB)
+			} catch (error) {
+				return assertThrow(error)
+			}
+			throw new Error('Address was changed to that of an existing employee')
+		})
+
 		it('succeeds', async () => {
 			await storage.add(employeeAddress, 1234)
-			await storage.setAddress(employeeAddress, anotherEmployeeAddress)
-			assert.equal(await storage.getAddress.call(1), anotherEmployeeAddress)
-			assert.equal(await storage.getId.call(anotherEmployeeAddress), 1)
+			await storage.setAddress(employeeAddress, employeeAddressB)
+			assert.equal(await storage.getAddress.call(1), employeeAddressB)
+			assert.equal(await storage.getId.call(employeeAddressB), 1)
 			assert.equal(await storage.mock_getId.call(employeeAddress), 0)
 		})
 	})
@@ -309,7 +321,7 @@ contract('EmployeeStorage', accounts => {
 			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 0)
 			await storage.add(employeeAddress, 24000e18)
 			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 24000e18)
-			await storage.add(anotherEmployeeAddress, 2000e18)
+			await storage.add(employeeAddressB, 2000e18)
 			assert.equal(await storage.getYearlyUSDSalariesTotal.call(), 26000e18)
 		})
 
@@ -346,10 +358,10 @@ contract('EmployeeStorage', accounts => {
 			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenB), 3500)
 			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenC), 5400)
 
-			await storage.add(anotherEmployeeAddress, 1234)
-			await storage.setSalaryToken(anotherEmployeeAddress, tokenA, 2000)
-			await storage.setSalaryToken(anotherEmployeeAddress, tokenB, 0)
-			await storage.setSalaryToken(anotherEmployeeAddress, tokenC, 400)
+			await storage.add(employeeAddressB, 1234)
+			await storage.setSalaryToken(employeeAddressB, tokenA, 2000)
+			await storage.setSalaryToken(employeeAddressB, tokenB, 0)
+			await storage.setSalaryToken(employeeAddressB, tokenC, 400)
 			assert.equal(await storage.getSalaryTokensTotalCount.call(), 3)
 			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenA), 4000)
 			assert.equal(await storage.getSalaryTokensTotalValue.call(tokenB), 3500)
