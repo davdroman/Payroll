@@ -14,6 +14,6 @@ To keep things consistent it intentionally doesn't support ETH out of the box, j
 
 Some minor things I left out for lack of time.
 
-- [ ] Let employees change their own account address. Let companies too in case the employee loses access to their wallet.
+- [x] Let employees change their own account address. Let companies too in case the employee loses access to their wallet.
 - [ ] Refactor index arrays + mappings into a common structure, since it's a common pattern in storage.
 - [ ] Make `USDExchange` currency agnostic and formalize a `USD` ERC20 token from which other tokens can be converted.
