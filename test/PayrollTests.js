@@ -472,7 +472,7 @@ contract('Payroll', accounts => {
 			await addEmployee()
 
 			try {
-				await payroll.changeAddress.call(otherAddress, { from: ownerAddress })
+				await payroll.changeAddress(otherAddress, { from: otherAddress })
 			} catch (error) {
 				return assertThrow(error)
 			}
