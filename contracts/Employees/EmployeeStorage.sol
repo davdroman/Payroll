@@ -75,15 +75,15 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	// Set
 
 	function remove(address[] storage _array, uint _index) private {
-        if (_index >= _array.length) return;
+		if (_index >= _array.length) return;
 
-        for (uint i = _index; i < _array.length - 1; i++){
-            _array[i] = _array[i + 1];
-        }
+		for (uint i = _index; i < _array.length - 1; i++){
+			_array[i] = _array[i + 1];
+		}
 
-        delete _array[_array.length - 1];
-        _array.length--;
-    }
+		delete _array[_array.length - 1];
+		_array.length--;
+	}
 
 	function removeAddressFromArray(address[] storage _array, address _address) private {
 		for (uint i = 0; i < _array.length; i++) {
@@ -92,7 +92,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 				break;
 			}
 		}
-    }
+	}
 
 	function arrayContainsAddress(address[] _array, address _address) private constant returns (bool contained) {
 		for (uint i; i < _array.length; i++) {
