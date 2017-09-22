@@ -9,9 +9,10 @@ module.exports = {
 			network_id: '*'
 		},
 		testing: {
-			host: "localhost",
+			host: 'localhost',
 			port: 8555,
 			network_id: '*',
+			gasLimit:
 			gasPrice: 0x01
 		}
 	}
