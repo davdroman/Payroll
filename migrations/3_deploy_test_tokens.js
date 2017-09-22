@@ -13,7 +13,7 @@ module.exports = (deployer, network) => {
 	deployer.deploy(ERC20TokenFactory).then(() => {
 		return tokens
 			.map((args) => ERC20TokenFactory.at(ERC20TokenFactory.address).create.apply(this, args))
-			.map((val) => val.then((result) => console.log(result.logs[0].args._name + ': ' + result.logs[0].args._address)))
+			.map((val) => val.then((result) => console.log('  ' + result.logs[0].args._name + ': ' + result.logs[0].args._address)))
 			.reduce((sum, val) => sum.then(val))
 	})
 }
