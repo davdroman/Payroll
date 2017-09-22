@@ -4,6 +4,7 @@ module.exports = (deployer, network) => {
 	const ERC20TokenFactory = artifacts.require('ERC20TokenFactory.sol')
 
 	// if deploying to a test network, deploy test tokens too
+	// TODO refactor
 	if (network != 'live') {
 		deployer.deploy(ERC20TokenFactory).then(() => {
 			return ERC20TokenFactory.at(ERC20TokenFactory.address).create(10000e18, 'Test Token A', 18, 'TTA')
