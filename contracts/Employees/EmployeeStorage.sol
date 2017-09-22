@@ -103,14 +103,14 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function setAddress(address _address, address _newAddress) onlyOwner existingEmployeeAddress(_address) notExistingEmployeeAddress(_newAddress) {
-		Employee employee = getEmployee(_address);
+		Employee storage employee = getEmployee(_address);
 		delete employeeIdsByAddress[_address];
 		employee.accountAddress = _newAddress;
 		employeeIdsByAddress[_newAddress] = employee.id;
 	}
 
 	function setAllocatedToken(address _address, address _token, uint _distribution) onlyOwner existingEmployeeAddress(_address) {
-		Employee employee = getEmployee(_address);
+		Employee storage employee = getEmployee(_address);
 
 		// adjust allocated tokens and keep index in sync
 		employee.allocatedTokens[_token] = _distribution;
@@ -123,7 +123,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function clearAllocatedAndSalaryTokens(address _address) onlyOwner existingEmployeeAddress(_address) {
-		Employee employee = getEmployee(_address);
+		Employee storage employee = getEmployee(_address);
 
 		uint allocatedTokensIndexLength = employee.allocatedTokensIndex.length;
 		for (uint a; a < allocatedTokensIndexLength; a++) {
@@ -137,7 +137,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function setPeggedToken(address _address, address _token, uint _value) onlyOwner existingEmployeeAddress(_address) {
-		Employee employee = getEmployee(_address);
+		Employee storage employee = getEmployee(_address);
 
 		// adjust pegged tokens and keep index in sync
 		employee.peggedTokens[_token] = _value;
@@ -150,7 +150,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function setSalaryToken(address _address, address _token, uint _value) onlyOwner existingEmployeeAddress(_address) {
-		Employee employee = getEmployee(_address);
+		Employee storage employee = getEmployee(_address);
 
 		// adjust salary tokens total and keep index in sync
 		uint totalValue = salaryTokensTotal[_token];
@@ -188,7 +188,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function setYearlyUSDSalary(address _address, uint _salary) onlyOwner existingEmployeeAddress(_address) {
-		Employee employee = getEmployee(_address);
+		Employee storage employee = getEmployee(_address);
 		yearlyUSDSalariesTotal = yearlyUSDSalariesTotal.sub(employee.yearlyUSDSalary);
 		employee.yearlyUSDSalary = _salary;
 		yearlyUSDSalariesTotal = yearlyUSDSalariesTotal.add(_salary);
@@ -279,7 +279,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	// Remove
 
 	function remove(address _address) onlyOwner existingEmployeeAddress(_address) {
-		Employee employee = getEmployee(_address);
+		Employee storage employee = getEmployee(_address);
 		clearAllocatedAndSalaryTokens(_address);
 
 		delete employee.id;
