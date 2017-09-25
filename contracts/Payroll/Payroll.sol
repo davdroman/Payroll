@@ -4,8 +4,8 @@ import './IPayroll.sol';
 import '../Employees/EmployeeStorage.sol';
 import '../Exchange/IExchange.sol';
 import '../Tokens/ERC20.sol';
-import '../Zeppelin/Ownable.sol';
-import '../Zeppelin/SafeMath.sol';
+import 'zeppelin-solidity/contracts/math/SafeMath.sol';
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 contract Payroll is IPayroll, Ownable {
 	using SafeMath for uint;

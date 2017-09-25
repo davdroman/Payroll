@@ -1,8 +1,8 @@
 pragma solidity ^0.4.11;
 
 import './IEmployeeStorage.sol';
-import '../Zeppelin/SafeMath.sol';
-import '../Zeppelin/Ownable.sol';
+import 'zeppelin-solidity/contracts/math/SafeMath.sol';
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 contract EmployeeStorage is IEmployeeStorage, Ownable {
 	using SafeMath for uint;

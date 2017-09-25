@@ -1,0 +1,14 @@
+{
+	"name": "Payroll",
+	"version": "1.0.0",
+	"description": "Payroll smart contract",
+	"author": "David Roman",
+	"license": "GPL-3.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/DavdRoman/Payroll.git"
+	},
+	"devDependencies": {
+		"zeppelin-solidity": "1.x"
+	}
+}
