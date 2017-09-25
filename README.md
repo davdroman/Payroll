@@ -1,16 +1,16 @@
-## Payroll
+# Payroll
 
 A modular, ERC20 token payroll smart contract.
 
 To keep things consistent it intentionally doesn't support ETH out of the box, just tokens. To get paid in ETH, any ERC20 wrapper for ETH will do the job (namely 0x's [WETH](https://weth.io)), and hopefully no wrapper will be needed when ETH becomes an ERC20 token itself.
 
-### Structure
+## Structure
 
 - `Payroll`: the main interface, where companies manage their employees and employees can determine their own token allocation and get paid when due.
 - `EmployeeStorage`: separate storage contract holding all relevant employee information, owned and restricted in use to `Payroll`.
 - `USDExchange`: smart contract determining the most recent prices for different tokens, from which `Payroll` draws information to calculate employee salaries.
 
-### Possible improvements
+## Possible improvements
 
 Some minor things I left out for lack of time.
 
