@@ -13,8 +13,8 @@ contract Payroll is IPayroll, Ownable {
 	IEmployeeStorage public employeeStorage;
 	IExchange public exchange;
 
-	uint constant public allocationFrequency = 180 days; // 6 months
-	uint constant public paydayFrequency = 30 days; // 1 month
+	uint public allocationFrequency;
+	uint public paydayFrequency;
 
 	// Modifiers
 
@@ -30,9 +30,11 @@ contract Payroll is IPayroll, Ownable {
 
 	// Init/setters
 
-	function Payroll(address _exchange) {
+	function Payroll(address _exchange, uint _allocationFrequency, uint _paydayFrequency) {
 		setEmployeeStorage(new EmployeeStorage());
 		setExchange(_exchange);
+		allocationFrequency = _allocationFrequency > 0 ? _allocationFrequency : 180 days; // defaults to 6 months
+		paydayFrequency = _paydayFrequency > 0 ? _paydayFrequency : 30 days; // defaults to 1 month
 	}
 
 	function setEmployeeStorage(address _newEmployeeStorage) onlyOwner validAddress(_newEmployeeStorage) {
