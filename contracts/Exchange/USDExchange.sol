@@ -29,6 +29,7 @@ contract USDExchange is Ownable, IExchange {
 		uint decimals = ERC20(token).decimals();
 		require(decimals >= 0);
 		require(decimals <= 18);
+		
 		return amount.mul(10**decimals).div(rate);
 	}
 
