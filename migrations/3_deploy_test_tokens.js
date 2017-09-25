@@ -1,6 +1,6 @@
 module.exports = (deployer, network) => {
-	if (network == 'testing') { return }
-	if (network == 'live') { return }
+	if (network == 'testing') return
+	if (network == 'live') return
 
 	const ERC20TokenFactory = artifacts.require('ERC20TokenFactory.sol')
 
