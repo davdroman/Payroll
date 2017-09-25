@@ -1,9 +1,9 @@
 pragma solidity ^0.4.11;
 
-import '../Zeppelin/SafeMath.sol';
-import '../Zeppelin/Ownable.sol';
 import '../Tokens/ERC20.sol';
 import './IExchange.sol';
+import 'zeppelin-solidity/contracts/math/SafeMath.sol';
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 contract USDExchange is Ownable, IExchange {
 	using SafeMath for uint;
