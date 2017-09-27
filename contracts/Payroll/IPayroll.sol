@@ -13,7 +13,7 @@ contract IPayroll {
 	function calculatePayrollBurnrate() constant returns (uint);
 	function calculatePayrollRunway() constant returns (uint);
 
-	function escapeHatch(bool forced);
+	function escapeHatch(bool _forced);
 
 	// Employee-only
 	function changeAddress(address _address);
