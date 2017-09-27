@@ -29,31 +29,31 @@ contract EmployeeStorageMock is EmployeeStorage {
 	}
 
 	function mock_getAllocatedTokenCount(address _address) constant returns (uint) {
-		return getEmployee(_address).allocatedTokensIndex.length;
+		return getEmployee(_address).allocatedTokens.length();
 	}
 
 	function mock_getAllocatedTokenAddress(address _address, uint _index) constant returns (address) {
-		return getEmployee(_address).allocatedTokensIndex[_index];
+		return getEmployee(_address).allocatedTokens.getAddress(_index);
 	}
 
 	function mock_getAllocatedTokenValue(address _address, address _token) constant returns (uint) {
-		return getEmployee(_address).allocatedTokens[_token];
+		return getEmployee(_address).allocatedTokens.getUInt(_token);
 	}
 
 	function mock_getPeggedTokenCount(address _address) constant returns (uint) {
-		return getEmployee(_address).peggedTokensIndex.length;
+		return getEmployee(_address).peggedTokens.length();
 	}
 
 	function mock_getPeggedTokenAddress(address _address, uint _index) constant returns (address) {
-		return getEmployee(_address).peggedTokensIndex[_index];
+		return getEmployee(_address).peggedTokens.getAddress(_index);
 	}
 
 	function mock_getPeggedTokenValue(address _address, address _token) constant returns (uint) {
-		return getEmployee(_address).peggedTokens[_token];
+		return getEmployee(_address).peggedTokens.getUInt(_token);
 	}
 
 	function mock_getSalaryTokenValue(address _address, address _token) constant returns (uint) {
-		return getEmployee(_address).salaryTokens[_token];
+		return getEmployee(_address).salaryTokens.getUInt(_token);
 	}
 
 	function mock_getLatestTokenAllocation(address _address) constant returns (uint) {

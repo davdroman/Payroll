@@ -71,15 +71,15 @@ contract Payroll is IPayroll, Ownable {
 		determineSalaryTokens(employeeAddress);
 	}
 
-	function determineSalaryTokens(address employeeAddress) private {
-		uint allocatedTokenCount = employeeStorage.getAllocatedTokenCount(employeeAddress);
+	function determineSalaryTokens(address _employeeAddress) private {
+		uint allocatedTokenCount = employeeStorage.getAllocatedTokenCount(_employeeAddress);
 
 		// calculate new salary
 		for (uint i = 0; i < allocatedTokenCount; i++) {
 			// fetch info to calculate token salary
-			address allocatedToken = employeeStorage.getAllocatedTokenAddress(employeeAddress, i);
-			uint allocation = employeeStorage.getAllocatedTokenValue(employeeAddress, allocatedToken);
-			uint peggedRate = employeeStorage.getPeggedTokenValue(employeeAddress, allocatedToken);
+			address allocatedToken = employeeStorage.getAllocatedTokenAddress(_employeeAddress, i);
+			uint allocation = employeeStorage.getAllocatedTokenValue(_employeeAddress, allocatedToken);
+			uint peggedRate = employeeStorage.getPeggedTokenValue(_employeeAddress, allocatedToken);
 
 			// assert validity
 			assert(allocatedToken != 0x0);
@@ -87,12 +87,12 @@ contract Payroll is IPayroll, Ownable {
 			assert(peggedRate > 0);
 
 			// calculate monthly salary
-			uint monthlyUSDSalary = employeeStorage.getYearlyUSDSalary(employeeAddress).div(12);
+			uint monthlyUSDSalary = employeeStorage.getYearlyUSDSalary(_employeeAddress).div(12);
 			uint monthlyUSDSalaryAllocation = monthlyUSDSalary.mul(allocation).div(10000);
 			uint monthlySalaryTokens = exchange.exchange(allocatedToken, monthlyUSDSalaryAllocation, peggedRate);
 
 			// assign salary tokens
-			employeeStorage.setSalaryToken(employeeAddress, allocatedToken, monthlySalaryTokens);
+			employeeStorage.setSalaryToken(_employeeAddress, allocatedToken, monthlySalaryTokens);
 		}
 	}
 
@@ -151,7 +151,7 @@ contract Payroll is IPayroll, Ownable {
 		return shortestTokenRunwayInMonths.mul(30); // convert to days
 	}
 
-	function escapeHatch(bool forced) onlyOwner {
+	function escapeHatch(bool _forced) onlyOwner {
 		uint salaryTokensTotalCount = employeeStorage.getSalaryTokensTotalCount();
 		bool tokenTransfersSucceeded = true;
 
@@ -163,7 +163,7 @@ contract Payroll is IPayroll, Ownable {
 			}
 		}
 
-		if (tokenTransfersSucceeded || forced) {
+		if (tokenTransfersSucceeded || _forced) {
 			selfdestruct(owner);
 		}
 	}

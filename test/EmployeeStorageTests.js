@@ -1,4 +1,5 @@
 const assertThrow = require('./helpers/assertThrow')
+const AddressUIntIndexedMappingLib = artifacts.require('AddressUIntIndexedMappingLib')
 const EmployeeStorage = artifacts.require('EmployeeStorageMock')
 
 contract('EmployeeStorage', accounts => {
@@ -13,6 +14,8 @@ contract('EmployeeStorage', accounts => {
 	const employeeAddressB = accounts[2]
 
 	beforeEach(async () => {
+		const indexedMappingLib = await AddressUIntIndexedMappingLib.new()
+		EmployeeStorage.link('AddressUIntIndexedMappingLib', indexedMappingLib.address)
 		storage = await EmployeeStorage.new()
 	})
 
