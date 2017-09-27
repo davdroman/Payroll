@@ -20,7 +20,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 		uint latestTokenAllocation;
 		uint latestPayday;
-		mapping (address => uint) latestTokenPaydays; // latest paydays on a per-token basis
+		AddressUIntIndexedMappingLib.Struct latestTokenPaydays; // latest paydays on a per-token basis
 
 		uint yearlyUSDSalary; // 18 decimals
 	}
@@ -117,7 +117,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function setLatestTokenPayday(address _address, address _token, uint _date) onlyOwner existingEmployeeAddress(_address) {
-		getEmployee(_address).latestTokenPaydays[_token] = _date;
+		getEmployee(_address).latestTokenPaydays.set(_token, _date);
 	}
 
 	function setYearlyUSDSalary(address _address, uint _salary) onlyOwner existingEmployeeAddress(_address) {
@@ -186,7 +186,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 	}
 
 	function getLatestTokenPayday(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
-		return getEmployee(_address).latestTokenPaydays[_token];
+		return getEmployee(_address).latestTokenPaydays.getUInt(_token);
 	}
 
 	function getYearlyUSDSalary(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
@@ -218,6 +218,7 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		employee.peggedTokens.clear();
 		delete employee.latestTokenAllocation;
 		delete employee.latestPayday;
+		employee.latestTokenPaydays.clear();
 		yearlyUSDSalariesTotal = yearlyUSDSalariesTotal.sub(employee.yearlyUSDSalary);
 		delete employee.yearlyUSDSalary;
 
