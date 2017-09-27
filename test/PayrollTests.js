@@ -51,11 +51,16 @@ contract('Payroll', accounts => {
 		tokenB = await ERC20Token.new(10000e7, 'Test Token B', 7, 'TTB')
 		tokenC = await ERC20Token.new(10000, 'Test Token C', 0, 'TTC')
 		tokenD = await ERC20Token.new(10000e4, 'Test Token D', 4, 'TTD')
+
+		exchange = await USDExchange.new(oracleAddress)
+
 		const indexedMappingLib = await AddressUIntIndexedMappingLib.new()
+		Payroll.link('AddressUIntIndexedMappingLib', indexedMappingLib.address)
+		payroll = await Payroll.new(exchange.address, 0, 0)
+
+		// inject mocked employee storage
 		EmployeeStorage.link('AddressUIntIndexedMappingLib', indexedMappingLib.address)
 		employeeStorage = await EmployeeStorage.new()
-		exchange = await USDExchange.new(oracleAddress)
-		payroll = await Payroll.new(exchange.address, 0, 0)
 		await employeeStorage.transferOwnership(payroll.address)
 		await payroll.setEmployeeStorage(employeeStorage.address)
 	})
