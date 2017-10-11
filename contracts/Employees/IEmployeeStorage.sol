@@ -2,7 +2,7 @@ pragma solidity ^0.4.11;
 
 contract IEmployeeStorage {
 	// Add
-	function add(address _address, uint _yearlyUSDSalary);
+	function add(address _address, uint _yearlyUSDSalary, uint _startDate);
 
 	// Set
 	function setAddress(address _address, address _newAddress);
