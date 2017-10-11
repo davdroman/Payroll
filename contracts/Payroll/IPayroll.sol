@@ -2,7 +2,7 @@ pragma solidity ^0.4.11;
 
 contract IPayroll {
 	// Company-only
-	function addEmployee(address _address, uint _yearlyUSDSalary);
+	function addEmployee(address _address, uint _yearlyUSDSalary, uint _startDate);
 	function setEmployeeAddress(uint _id, address _address);
 	function setEmployeeSalary(uint _id, uint _yearlyUSDSalary);
 	function removeEmployee(uint _id);

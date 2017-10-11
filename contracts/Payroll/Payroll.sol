@@ -56,8 +56,8 @@ contract Payroll is IPayroll, Ownable {
 	/// @param _yearlyUSDSalary the initial yearly USD salary, expressed
 	/// with 18 decimals.
 	/// i.e. $43500.32 = 4350032e16
-	function addEmployee(address _address, uint _yearlyUSDSalary) onlyOwner validAddress(_address) higherThanZeroUInt(_yearlyUSDSalary) {
-		employeeStorage.add(_address, _yearlyUSDSalary);
+	function addEmployee(address _address, uint _yearlyUSDSalary, uint _startDate) onlyOwner validAddress(_address) higherThanZeroUInt(_yearlyUSDSalary) {
+		employeeStorage.add(_address, _yearlyUSDSalary, _startDate);
 	}
 
 	function setEmployeeAddress(uint _id, address _address) onlyOwner validAddress(_address) {
