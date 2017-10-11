@@ -9,7 +9,7 @@ contract EmployeeStorageMock is EmployeeStorage {
 	}
 
 	function mock_resetLatestPayday(address _address) {
-		getEmployee(_address).latestPayday = 0;
+		getEmployee(_address).latestPayday = now;
 	}
 
 	function mock_getCount() constant returns (uint) {

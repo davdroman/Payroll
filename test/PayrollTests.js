@@ -28,7 +28,7 @@ contract('Payroll', accounts => {
 	}
 
 	const addEmployee = async () => {
-		await payroll.addEmployee(employeeAddress, 24000e18)
+		await payroll.addEmployee(employeeAddress, 24000e18, 0)
 	}
 
 	const determineAllocation = async () => {
@@ -68,7 +68,7 @@ contract('Payroll', accounts => {
 	context('adding employee', () => {
 		it('throws when sender is not owner', async () => {
 			try {
-				await payroll.addEmployee.call(employeeAddress, 1000, { from: otherAddress })
+				await payroll.addEmployee.call(employeeAddress, 1000, 0, { from: otherAddress })
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -77,7 +77,7 @@ contract('Payroll', accounts => {
 
 		it('throws when address is invalid', async () => {
 			try {
-				await payroll.addEmployee.call(EMPTY_ADDRESS, 1234)
+				await payroll.addEmployee.call(EMPTY_ADDRESS, 1234, 0)
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -86,7 +86,7 @@ contract('Payroll', accounts => {
 
 		it('throws when salary is zero', async () => {
 			try {
-				await payroll.addEmployee.call(employeeAddress, 0)
+				await payroll.addEmployee.call(employeeAddress, 0, 0)
 			} catch (error) {
 				return assertThrow(error)
 			}
@@ -260,7 +260,7 @@ contract('Payroll', accounts => {
 			assert.equal(await payroll.calculatePayrollBurnrate.call(), 2000e18)
 			await payroll.setEmployeeSalary(1, 30000e18)
 			assert.equal(await payroll.calculatePayrollBurnrate.call(), 2500e18)
-			await payroll.addEmployee(otherAddress, 24000e18)
+			await payroll.addEmployee(otherAddress, 24000e18, 0)
 			assert.equal(await payroll.calculatePayrollBurnrate.call(), 4500e18)
 			await payroll.removeEmployee(1)
 			assert.equal(await payroll.calculatePayrollBurnrate.call(), 2000e18)
@@ -658,6 +658,7 @@ contract('Payroll', accounts => {
 			await setExchangeRates()
 			await addEmployee()
 			await determineAllocation()
+			await employeeStorage.mock_resetLatestPayday(employeeAddress)
 
 			try {
 				await payroll.payday({ from: employeeAddress })
@@ -672,7 +673,6 @@ contract('Payroll', accounts => {
 			await addEmployee()
 			await determineAllocation()
 			await fundPayroll()
-			await employeeStorage.mock_resetLatestPayday(employeeAddress)
 
 			assert.equal(await tokenA.balanceOf.call(payroll.address), 5000e18)
 			assert.equal(await tokenB.balanceOf.call(payroll.address), 2400e7)
@@ -708,7 +708,6 @@ contract('Payroll', accounts => {
 			await addEmployee()
 			await determineAllocation()
 			await fundPayroll(30e4)
-			await employeeStorage.mock_resetLatestPayday(employeeAddress)
 
 			assert.equal(await tokenA.balanceOf.call(payroll.address), 5000e18)
 			assert.equal(await tokenB.balanceOf.call(payroll.address), 2400e7)
@@ -764,7 +763,6 @@ contract('Payroll', accounts => {
 			await addEmployee()
 			await determineAllocation()
 			await fundPayroll()
-			await employeeStorage.mock_resetLatestPayday(employeeAddress)
 
 			assert.equal(await tokenA.balanceOf.call(payroll.address), 5000e18)
 			assert.equal(await tokenB.balanceOf.call(payroll.address), 2400e7)
@@ -821,8 +819,8 @@ contract('Payroll', accounts => {
 			await addEmployee()
 			await determineAllocation()
 			await fundPayroll()
-			await employeeStorage.mock_resetLatestPayday(employeeAddress)
 			await payroll.payday({ from: employeeAddress })
+			await employeeStorage.mock_resetLatestPayday(employeeAddress)
 
 			try {
 				await payroll.payday({ from: employeeAddress })
