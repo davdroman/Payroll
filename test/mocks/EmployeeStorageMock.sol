@@ -15,7 +15,7 @@ contract EmployeeStorageMock is EmployeeStorage {
 	/// Helper function that requires all fields of an employee to be empty
 	/// in order not to throw. Used to test employees are removed completely
 	/// without leaving storage residue behind.
-	function mock_throwIfNotRemoved(address _address) constant returns (bool) {
+	function mock_throwIfNotRemoved(address _address) {
 		Employee storage employee = getEmployee(_address);
 		require(!employee.exists);
 		require(employee.id == 0);
