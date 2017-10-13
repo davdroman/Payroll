@@ -23,30 +23,15 @@ contract('USDExchange', accounts => {
 
 	context('setting token exchange rate', () => {
 		it('throws when caller is not the oracle', async () => {
-			try {
-				await exchange.setExchangeRate.call(tokenA.address, 2e18, { from: userAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Exchange rate was set by other than the oracle')
+			await assertThrow(exchange.setExchangeRate.call(tokenA.address, 2e18, { from: userAddress }))
 		})
 
 		it('throws when address is invalid', async () => {
-			try {
-				await exchange.setExchangeRate.call(EMPTY_ADDRESS, 2e18, { from: oracleAddressA })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Exchange rate was set for invalid address')
+			await assertThrow(exchange.setExchangeRate.call(EMPTY_ADDRESS, 2e18, { from: oracleAddressA }))
 		})
 
 		it('throws when exchange rate is zero', async () => {
-			try {
-				await exchange.setExchangeRate.call(tokenA.address, 0, { from: oracleAddressA })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Exchange rate was set with a value of zero')
+			await assertThrow(exchange.setExchangeRate.call(tokenA.address, 0, { from: oracleAddressA }))
 		})
 
 		it('succeeds', async () => {
@@ -60,21 +45,11 @@ contract('USDExchange', accounts => {
 
 	context('setting exchange rate oracle', () => {
 		it('throws when caller is not the owner', async () => {
-			try {
-				await exchange.setExchangeRateOracle.call(oracleAddressA, { from: oracleAddressA })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Exchange rate oracle was set by other than the owner')
+			await assertThrow(exchange.setExchangeRateOracle.call(oracleAddressA, { from: oracleAddressA }))
 		})
 
 		it('throws when address is invalid', async () => {
-			try {
-				await exchange.setExchangeRateOracle.call(EMPTY_ADDRESS, { from: ownerAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Exchange rate oracle was set with invalid address')
+			await assertThrow(exchange.setExchangeRateOracle.call(EMPTY_ADDRESS, { from: ownerAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -91,21 +66,11 @@ contract('USDExchange', accounts => {
 		})
 
 		it('throws when address is invalid', async () => {
-			try {
-				await exchange.exchange.call(EMPTY_ADDRESS, 20e18, 2e18)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Token address is invalid')
+			await assertThrow(exchange.exchange.call(EMPTY_ADDRESS, 20e18, 2e18))
 		})
 
 		it('throws when exchange rate is 0', async () => {
-			try {
-				await exchange.exchange.call(tokenA.address, 20e18, 0)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Exchange rate was set for invalid address')
+			await assertThrow(exchange.exchange.call(tokenA.address, 20e18, 0))
 		})
 
 		it('succeeds to peg token with 18 decimals', async () => {

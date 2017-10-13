@@ -67,69 +67,42 @@ contract('Payroll', accounts => {
 
 	context('adding employee', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await payroll.addEmployee.call(employeeAddress, 1000, 0, { from: otherAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee was added by other than owner')
+			await assertThrow(payroll.addEmployee.call(employeeAddress, 1000, 0, { from: otherAddress }))
 		})
 
 		it('throws when address is invalid', async () => {
-			try {
-				await payroll.addEmployee.call(EMPTY_ADDRESS, 1234, 0)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee was added with invalid address')
+			await assertThrow(payroll.addEmployee.call(EMPTY_ADDRESS, 1234, 0))
 		})
 
 		it('throws when salary is zero', async () => {
-			try {
-				await payroll.addEmployee.call(employeeAddress, 0, 0)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee was added with salary as zero')
+			await assertThrow(payroll.addEmployee.call(employeeAddress, 0, 0))
 		})
 
 		it('succeeds', async () => {
 			await addEmployee()
-			assert.equal(await employeeStorage.mock_getAddress.call(1), employeeAddress)
-			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 24000e18)
+			assert.equal(await employeeStorage.getAddress.call(1), employeeAddress)
+			assert.equal(await employeeStorage.getYearlyUSDSalary.call(employeeAddress), 24000e18)
 		})
 	})
 
 	context('setting employee address', () => {
 		it('throws when sender is not owner', async () => {
 			await addEmployee()
-
-			try {
-				await payroll.setEmployeeAddress.call(1, otherAddress, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Address was changed by other than owner')
+			await assertThrow(payroll.setEmployeeAddress.call(1, otherAddress, { from: employeeAddress }))
 		})
 
 		it('throws when address is invalid', async () => {
 			await addEmployee()
-
-			try {
-				await payroll.setEmployeeAddress.call(1, EMPTY_ADDRESS)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Invalid employee address was set')
+			await assertThrow(payroll.setEmployeeAddress.call(1, EMPTY_ADDRESS))
 		})
 
 		it('succeeds', async () => {
 			await addEmployee()
 			await payroll.setEmployeeAddress(1, otherAddress)
 
-			assert.equal(await employeeStorage.mock_getAddress.call(1), otherAddress)
-			assert.equal(await employeeStorage.mock_getId.call(otherAddress), 1)
-			assert.equal(await employeeStorage.mock_getId.call(employeeAddress), 0)
+			assert.equal(await employeeStorage.getAddress.call(1), otherAddress)
+			assert.equal(await employeeStorage.getId.call(otherAddress), 1)
+			await assertThrow(employeeStorage.getId.call(employeeAddress))
 		})
 	})
 
@@ -138,26 +111,14 @@ contract('Payroll', accounts => {
 			await setExchangeRates()
 			await addEmployee()
 			await determineAllocation()
-
-			try {
-				await payroll.setEmployeeSalary.call(1, 5678, { from: otherAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee was added by other than owner')
+			await assertThrow(payroll.setEmployeeSalary.call(1, 5678, { from: otherAddress }))
 		})
 
 		it('throws when salary is zero', async () => {
 			await setExchangeRates()
 			await addEmployee()
 			await determineAllocation()
-
-			try {
-				await payroll.setEmployeeSalary.call(1, 0)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee was added with salary zero')
+			await assertThrow(payroll.setEmployeeSalary.call(1, 0))
 		})
 
 		it('succeeds', async () => {
@@ -166,36 +127,24 @@ contract('Payroll', accounts => {
 			await determineAllocation()
 
 			await payroll.setEmployeeSalary(1, 30000e18)
-			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 30000e18)
+			assert.equal(await employeeStorage.getYearlyUSDSalary.call(employeeAddress), 30000e18)
 
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenA.address), 625e18)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenB.address), 300e7)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenC.address), 41)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenD.address), 62.5e4)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenA.address), 625e18)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenB.address), 300e7)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenC.address), 41)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenD.address), 62.5e4)
 		})
 	})
 
 	context('removing an employee', () => {
 		it('throws when employee does not exist', async () => {
 			await addEmployee()
-
-			try {
-				await payroll.removeEmployee(2)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Inexistent employee was removed (wat)')
+			await assertThrow(payroll.removeEmployee(2))
 		})
 
 		it('throws when sender is not the owner', async () => {
 			await addEmployee()
-
-			try {
-				await payroll.removeEmployee.call(1, { from: otherAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee was removed by other than owner')
+			await assertThrow(payroll.removeEmployee.call(1, { from: otherAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -205,30 +154,8 @@ contract('Payroll', accounts => {
 
 			await payroll.removeEmployee(1)
 
-			assert.equal(await employeeStorage.mock_getCount.call(), 0)
-			assert.equal(await employeeStorage.mock_getExists.call(employeeAddress), false)
-			assert.equal(await employeeStorage.mock_getId.call(employeeAddress), 0)
-			assert.equal(await employeeStorage.mock_getAddress.call(1), EMPTY_ADDRESS)
-			assert.equal(await employeeStorage.mock_getLatestTokenAllocation.call(employeeAddress), 0)
-			assert.equal(await employeeStorage.mock_getLatestPayday.call(employeeAddress), 0)
-			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 0)
-
-			assert.equal(await employeeStorage.mock_getAllocatedTokenCount.call(employeeAddress), 0)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenA.address), 0)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenB.address), 0)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenC.address), 0)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenD.address), 0)
-
-			assert.equal(await employeeStorage.mock_getPeggedTokenCount.call(employeeAddress), 0)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenA.address), 0)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenB.address), 0)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenC.address), 0)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenD.address), 0)
-
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenA.address), 0)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenB.address), 0)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenC.address), 0)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenD.address), 0)
+			assert.equal(await employeeStorage.getCount.call(), 0)
+			await employeeStorage.mock_throwIfNotRemoved.call(employeeAddress)
 		})
 
 		it('succeeds readding', async () => {
@@ -239,19 +166,14 @@ contract('Payroll', accounts => {
 			await payroll.removeEmployee(1)
 			await addEmployee()
 
-			assert.equal(await employeeStorage.mock_getAddress.call(2), employeeAddress)
-			assert.equal(await employeeStorage.mock_getYearlyUSDSalary.call(employeeAddress), 24000e18)
+			assert.equal(await employeeStorage.getAddress.call(2), employeeAddress)
+			assert.equal(await employeeStorage.getYearlyUSDSalary.call(employeeAddress), 24000e18)
 		})
 	})
 
 	context('calculating payroll burnrate', () => {
 		it('throws when sender is not the owner', async () => {
-			try {
-				await payroll.calculatePayrollBurnrate.call({ from: otherAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Burnrate was fetched by other than owner')
+			await assertThrow(payroll.calculatePayrollBurnrate.call({ from: otherAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -271,12 +193,7 @@ contract('Payroll', accounts => {
 
 	context('calculating payroll runway', () => {
 		it('throws when sender is not the owner', async () => {
-			try {
-				await payroll.calculatePayrollRunway.call({ from: otherAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Runway was fetched by other than owner')
+			await assertThrow(payroll.calculatePayrollRunway.call({ from: otherAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -314,12 +231,7 @@ contract('Payroll', accounts => {
 
 	context('escape hatch', () => {
 		it('throws when sender is not the owner', async () => {
-			try {
-				await payroll.escapeHatch.call(true, { from: otherAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Escape hatch was performed by other than owner')
+			await assertThrow(payroll.escapeHatch.call(true, { from: otherAddress }))
 		})
 
 		it('succeeds with healthy tokens, non-forced', async () => {
@@ -478,33 +390,21 @@ contract('Payroll', accounts => {
 	context('changing address', () => {
 		it('throws when sender is not employee', async () => {
 			await addEmployee()
-
-			try {
-				await payroll.changeAddress(otherAddress, { from: otherAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Address was changed by other than employee')
+			await assertThrow(payroll.changeAddress(otherAddress, { from: otherAddress }))
 		})
 
 		it('throws when address is invalid', async () => {
 			await addEmployee()
-
-			try {
-				await payroll.changeAddress.call(EMPTY_ADDRESS, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee changed their address to an invalid one')
+			await assertThrow(payroll.changeAddress.call(EMPTY_ADDRESS, { from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
 			await addEmployee()
 			await payroll.changeAddress(otherAddress, { from: employeeAddress })
 
-			assert.equal(await employeeStorage.mock_getAddress.call(1), otherAddress)
-			assert.equal(await employeeStorage.mock_getId.call(otherAddress), 1)
-			assert.equal(await employeeStorage.mock_getId.call(employeeAddress), 0)
+			assert.equal(await employeeStorage.getAddress.call(1), otherAddress)
+			assert.equal(await employeeStorage.getId.call(otherAddress), 1)
+			await assertThrow(employeeStorage.getId.call(employeeAddress))
 		})
 	})
 
@@ -512,49 +412,31 @@ contract('Payroll', accounts => {
 		it('throws when address is invalid', async () => {
 			await setExchangeRates()
 			await addEmployee()
-
-			try {
-				await payroll.determineAllocation(
-					[tokenA.address, tokenB.address, tokenC.address, tokenD.address],
-					[5000, 3000, 1000, 1000],
-					{ from: otherAddress }
-				)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Allocation was determined by other than employee')
+			await assertThrow(payroll.determineAllocation(
+				[tokenA.address, tokenB.address, tokenC.address, tokenD.address],
+				[5000, 3000, 1000, 1000],
+				{ from: otherAddress }
+			))
 		})
 
 		it('throws when array lengths do not match', async () => {
 			await setExchangeRates()
 			await addEmployee()
-
-			try {
-				await payroll.determineAllocation.call(
-					[tokenA.address, tokenB.address, tokenC.address, tokenD.address],
-					[5000, 3000, 2000],
-					{ from: employeeAddress }
-				)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Allocation was determined with unmatched arrays')
+			await assertThrow(payroll.determineAllocation.call(
+				[tokenA.address, tokenB.address, tokenC.address, tokenD.address],
+				[5000, 3000, 2000],
+				{ from: employeeAddress }
+			))
 		})
 
 		it('throws when distribution is not 100%', async () => {
 			await setExchangeRates()
 			await addEmployee()
-
-			try {
-				await payroll.determineAllocation.call(
-					[tokenA.address, tokenB.address, tokenC.address, tokenD.address],
-					[5000, 3000, 1000, 500],
-					{ from: employeeAddress }
-				)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Allocation was determined distribution != 100%')
+			await assertThrow(payroll.determineAllocation.call(
+				[tokenA.address, tokenB.address, tokenC.address, tokenD.address],
+				[5000, 3000, 1000, 500],
+				{ from: employeeAddress }
+			))
 		})
 
 		it('succeeds', async () => {
@@ -562,43 +444,37 @@ contract('Payroll', accounts => {
 			await addEmployee()
 			await determineAllocation()
 
-			assert.equal(await employeeStorage.mock_getAllocatedTokenCount.call(employeeAddress), 4)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenAddress.call(employeeAddress, 0), tokenA.address)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenAddress.call(employeeAddress, 1), tokenB.address)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenAddress.call(employeeAddress, 2), tokenC.address)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenAddress.call(employeeAddress, 3), tokenD.address)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenA.address), 5000)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenB.address), 3000)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenC.address), 1000)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenD.address), 1000)
+			assert.equal(await employeeStorage.getAllocatedTokenCount.call(employeeAddress), 4)
+			assert.equal(await employeeStorage.getAllocatedTokenAddress.call(employeeAddress, 0), tokenA.address)
+			assert.equal(await employeeStorage.getAllocatedTokenAddress.call(employeeAddress, 1), tokenB.address)
+			assert.equal(await employeeStorage.getAllocatedTokenAddress.call(employeeAddress, 2), tokenC.address)
+			assert.equal(await employeeStorage.getAllocatedTokenAddress.call(employeeAddress, 3), tokenD.address)
+			assert.equal(await employeeStorage.getAllocatedTokenValue.call(employeeAddress, tokenA.address), 5000)
+			assert.equal(await employeeStorage.getAllocatedTokenValue.call(employeeAddress, tokenB.address), 3000)
+			assert.equal(await employeeStorage.getAllocatedTokenValue.call(employeeAddress, tokenC.address), 1000)
+			assert.equal(await employeeStorage.getAllocatedTokenValue.call(employeeAddress, tokenD.address), 1000)
 
-			assert.equal(await employeeStorage.mock_getPeggedTokenCount.call(employeeAddress), 4)
-			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 0), tokenA.address)
-			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 1), tokenB.address)
-			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 2), tokenC.address)
-			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 3), tokenD.address)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenA.address), 2e18)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenB.address), 2.5e18)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenC.address), 6e18)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenD.address), 4e18)
+			assert.equal(await employeeStorage.getPeggedTokenCount.call(employeeAddress), 4)
+			assert.equal(await employeeStorage.getPeggedTokenAddress.call(employeeAddress, 0), tokenA.address)
+			assert.equal(await employeeStorage.getPeggedTokenAddress.call(employeeAddress, 1), tokenB.address)
+			assert.equal(await employeeStorage.getPeggedTokenAddress.call(employeeAddress, 2), tokenC.address)
+			assert.equal(await employeeStorage.getPeggedTokenAddress.call(employeeAddress, 3), tokenD.address)
+			assert.equal(await employeeStorage.getPeggedTokenValue.call(employeeAddress, tokenA.address), 2e18)
+			assert.equal(await employeeStorage.getPeggedTokenValue.call(employeeAddress, tokenB.address), 2.5e18)
+			assert.equal(await employeeStorage.getPeggedTokenValue.call(employeeAddress, tokenC.address), 6e18)
+			assert.equal(await employeeStorage.getPeggedTokenValue.call(employeeAddress, tokenD.address), 4e18)
 
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenA.address), 500e18)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenB.address), 240e7)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenC.address), 33)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenD.address), 50e4)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenA.address), 500e18)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenB.address), 240e7)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenC.address), 33)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenD.address), 50e4)
 		})
 
 		it('throws when reallocation is not due', async () => {
 			await setExchangeRates()
 			await addEmployee()
 			await determineAllocation()
-
-			try {
-				await determineAllocation()
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Allocation was determined before next due date')
+			await assertThrow(determineAllocation())
 		})
 
 		it('succeeds reallocation', async () => {
@@ -619,39 +495,34 @@ contract('Payroll', accounts => {
 				{ from: employeeAddress }
 			)
 
-			assert.equal(await employeeStorage.mock_getAllocatedTokenCount.call(employeeAddress), 3)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenAddress.call(employeeAddress, 0), tokenA.address)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenAddress.call(employeeAddress, 1), tokenC.address)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenAddress.call(employeeAddress, 2), tokenD.address)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenA.address), 3000)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenC.address), 5000)
-			assert.equal(await employeeStorage.mock_getAllocatedTokenValue.call(employeeAddress, tokenD.address), 2000)
+			assert.equal(await employeeStorage.getAllocatedTokenCount.call(employeeAddress), 3)
+			assert.equal(await employeeStorage.getAllocatedTokenAddress.call(employeeAddress, 0), tokenA.address)
+			assert.equal(await employeeStorage.getAllocatedTokenAddress.call(employeeAddress, 1), tokenC.address)
+			assert.equal(await employeeStorage.getAllocatedTokenAddress.call(employeeAddress, 2), tokenD.address)
+			assert.equal(await employeeStorage.getAllocatedTokenValue.call(employeeAddress, tokenA.address), 3000)
+			assert.equal(await employeeStorage.getAllocatedTokenValue.call(employeeAddress, tokenC.address), 5000)
+			assert.equal(await employeeStorage.getAllocatedTokenValue.call(employeeAddress, tokenD.address), 2000)
 
-			assert.equal(await employeeStorage.mock_getPeggedTokenCount.call(employeeAddress), 4)
-			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 0), tokenA.address)
-			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 1), tokenB.address)
-			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 2), tokenC.address)
-			assert.equal(await employeeStorage.mock_getPeggedTokenAddress.call(employeeAddress, 3), tokenD.address)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenA.address), 2e18)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenB.address), 2.5e18)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenC.address), 6e18)
-			assert.equal(await employeeStorage.mock_getPeggedTokenValue.call(employeeAddress, tokenD.address), 4e18)
+			assert.equal(await employeeStorage.getPeggedTokenCount.call(employeeAddress), 4)
+			assert.equal(await employeeStorage.getPeggedTokenAddress.call(employeeAddress, 0), tokenA.address)
+			assert.equal(await employeeStorage.getPeggedTokenAddress.call(employeeAddress, 1), tokenB.address)
+			assert.equal(await employeeStorage.getPeggedTokenAddress.call(employeeAddress, 2), tokenC.address)
+			assert.equal(await employeeStorage.getPeggedTokenAddress.call(employeeAddress, 3), tokenD.address)
+			assert.equal(await employeeStorage.getPeggedTokenValue.call(employeeAddress, tokenA.address), 2e18)
+			assert.equal(await employeeStorage.getPeggedTokenValue.call(employeeAddress, tokenB.address), 2.5e18)
+			assert.equal(await employeeStorage.getPeggedTokenValue.call(employeeAddress, tokenC.address), 6e18)
+			assert.equal(await employeeStorage.getPeggedTokenValue.call(employeeAddress, tokenD.address), 4e18)
 
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenA.address), 300e18)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenB.address), 0)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenC.address), 166)
-			assert.equal(await employeeStorage.mock_getSalaryTokenValue.call(employeeAddress, tokenD.address), 100e4)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenA.address), 300e18)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenB.address), 0)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenC.address), 166)
+			assert.equal(await employeeStorage.getSalaryTokenValue.call(employeeAddress, tokenD.address), 100e4)
 		})
 	})
 
 	context('payday', () => {
 		it('throws when employee does not exist', async () => {
-			try {
-				await payroll.payday({ from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Inexistent employee got paid (wat)')
+			await assertThrow(payroll.payday({ from: employeeAddress }))
 		})
 
 		it('throws when employee is a newcomer', async () => {
@@ -659,13 +530,7 @@ contract('Payroll', accounts => {
 			await addEmployee()
 			await determineAllocation()
 			await employeeStorage.mock_resetLatestPayday(employeeAddress)
-
-			try {
-				await payroll.payday({ from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee got paid right after creation')
+			await assertThrow(payroll.payday({ from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -750,12 +615,7 @@ contract('Payroll', accounts => {
 			assert.equal(await tokenC.balanceOf.call(employeeAddress), 33)
 			assert.equal(await tokenD.balanceOf.call(employeeAddress), 50e4)
 
-			try {
-				await payroll.payday({ from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee got double paid')
+			await assertThrow(payroll.payday({ from: employeeAddress }))
 		})
 
 		it('succeeds when token is faulty, succeeds re-payment', async () => {
@@ -806,12 +666,7 @@ contract('Payroll', accounts => {
 			assert.equal(await tokenC.balanceOf.call(employeeAddress), 33)
 			assert.equal(await tokenD.balanceOf.call(employeeAddress), 50e4)
 
-			try {
-				await payroll.payday({ from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee got double paid')
+			await assertThrow(payroll.payday({ from: employeeAddress }))
 		})
 
 		it('throws after successful payday', async () => {
@@ -821,13 +676,7 @@ contract('Payroll', accounts => {
 			await fundPayroll()
 			await payroll.payday({ from: employeeAddress })
 			await employeeStorage.mock_resetLatestPayday(employeeAddress)
-
-			try {
-				await payroll.payday({ from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee got double paid')
+			await assertThrow(payroll.payday({ from: employeeAddress }))
 		})
 	})
 })

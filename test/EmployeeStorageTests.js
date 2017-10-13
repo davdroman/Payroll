@@ -21,23 +21,12 @@ contract('EmployeeStorage', accounts => {
 
 	context('adding employee', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await storage.add.call(employeeAddress, 1000, 0, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee was added by other than owner')
+			await assertThrow(storage.add.call(employeeAddress, 1000, 0, { from: employeeAddress }))
 		})
 
 		it('throws when employee already exists', async () => {
 			await storage.add(employeeAddress, 1000, 0)
-
-			try {
-				await storage.add.call(employeeAddress, 1000, 0)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee was added twice')
+			await assertThrow(storage.add.call(employeeAddress, 1000, 0))
 		})
 
 		it('succeeds', async () => {
@@ -45,8 +34,8 @@ contract('EmployeeStorage', accounts => {
 			assert.equal(await storage.getCount.call(), 1)
 			assert.equal(await storage.getId.call(employeeAddress), 1)
 			assert.equal(await storage.getAddress.call(1), employeeAddress)
-			assert.equal(await storage.mock_getLatestTokenAllocation.call(employeeAddress), 0)
-			assert.equal(await storage.mock_getLatestPayday.call(employeeAddress), 5)
+			assert.equal(await storage.getLatestTokenAllocation.call(employeeAddress), 0)
+			assert.equal(await storage.getLatestPayday.call(employeeAddress), 5)
 			assert.equal(await storage.getYearlyUSDSalary.call(employeeAddress), 1234)
 		})
 	})
@@ -54,25 +43,13 @@ contract('EmployeeStorage', accounts => {
 	context('setting address', () => {
 		it('throws when sender is not owner', async () => {
 			await storage.add(employeeAddress, 1000, 0)
-
-			try {
-				await storage.setAddress.call(employeeAddress, employeeAddressB, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Address was changed by other than owner')
+			await assertThrow(storage.setAddress.call(employeeAddress, employeeAddressB, { from: employeeAddress }))
 		})
 
 		it('throws when new address belongs to existing employee', async () => {
 			await storage.add(employeeAddress, 1000, 0)
 			await storage.add(employeeAddressB, 1500, 0)
-
-			try {
-				await storage.setAddress.call(employeeAddress, employeeAddressB)
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Address was changed to that of an existing employee')
+			await assertThrow(storage.setAddress.call(employeeAddress, employeeAddressB))
 		})
 
 		it('succeeds', async () => {
@@ -80,18 +57,13 @@ contract('EmployeeStorage', accounts => {
 			await storage.setAddress(employeeAddress, employeeAddressB)
 			assert.equal(await storage.getAddress.call(1), employeeAddressB)
 			assert.equal(await storage.getId.call(employeeAddressB), 1)
-			assert.equal(await storage.mock_getId.call(employeeAddress), 0)
+			await assertThrow(storage.getId.call(employeeAddress))
 		})
 	})
 
 	context('setting allocation', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await storage.setAllocatedToken.call(employeeAddress, tokenA, 1000, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Allocation was set by other than owner')
+			await assertThrow(storage.setAllocatedToken.call(employeeAddress, tokenA, 1000, { from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -119,12 +91,7 @@ contract('EmployeeStorage', accounts => {
 
 	context('setting pegging', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await storage.setPeggedToken.call(employeeAddress, tokenA, 1000, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Pegging was set by other than owner')
+			await assertThrow(storage.setPeggedToken.call(employeeAddress, tokenA, 1000, { from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -152,12 +119,7 @@ contract('EmployeeStorage', accounts => {
 
 	context('setting salary tokens', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await storage.setSalaryToken.call(employeeAddress, tokenA, 1000, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Salary was set by other than owner')
+			await assertThrow(storage.setSalaryToken.call(employeeAddress, tokenA, 1000, { from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -177,12 +139,7 @@ contract('EmployeeStorage', accounts => {
 
 	context('clearing allocation and salary', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await storage.clearAllocatedAndSalaryTokens.call(employeeAddress, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Clearing was done by other than owner')
+			await assertThrow(storage.clearAllocatedAndSalaryTokens.call(employeeAddress, { from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -207,12 +164,7 @@ contract('EmployeeStorage', accounts => {
 
 	context('setting latest allocation date', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await storage.setLatestTokenAllocation.call(employeeAddress, 100, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Setting latest allocation date was done by other than owner')
+			await assertThrow(storage.setLatestTokenAllocation.call(employeeAddress, 100, { from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -224,12 +176,7 @@ contract('EmployeeStorage', accounts => {
 
 	context('setting latest payday date', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await storage.setLatestPayday.call(employeeAddress, 100, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Setting latest payday date was done by other than owner')
+			await assertThrow(storage.setLatestPayday.call(employeeAddress, 100, { from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -241,12 +188,7 @@ contract('EmployeeStorage', accounts => {
 
 	context('setting latest token payday date', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await storage.setLatestTokenPayday.call(employeeAddress, tokenA, 100, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Setting latest token payday date was done by other than owner')
+			await assertThrow(storage.setLatestTokenPayday.call(employeeAddress, tokenA, 100, { from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -258,12 +200,7 @@ contract('EmployeeStorage', accounts => {
 
 	context('setting yearly USD salary', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await storage.setYearlyUSDSalary.call(employeeAddress, 100, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Setting yearly USD salary was done by other than owner')
+			await assertThrow(storage.setYearlyUSDSalary.call(employeeAddress, 100, { from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -275,12 +212,7 @@ contract('EmployeeStorage', accounts => {
 
 	context('removing employee', () => {
 		it('throws when sender is not owner', async () => {
-			try {
-				await storage.remove.call(employeeAddress, { from: employeeAddress })
-			} catch (error) {
-				return assertThrow(error)
-			}
-			throw new Error('Employee was removed by other than owner')
+			await assertThrow(storage.remove.call(employeeAddress, { from: employeeAddress }))
 		})
 
 		it('succeeds', async () => {
@@ -299,23 +231,7 @@ contract('EmployeeStorage', accounts => {
 			await storage.setYearlyUSDSalary(employeeAddress, 300)
 			await storage.remove(employeeAddress)
 			assert.equal(await storage.getCount.call(), 0)
-			assert.equal(await storage.mock_getExists.call(employeeAddress), false)
-			assert.equal(await storage.mock_getId.call(employeeAddress), 0)
-			assert.equal(await storage.mock_getAddress.call(0), EMPTY_ADDRESS)
-			assert.equal(await storage.mock_getAllocatedTokenCount.call(employeeAddress), 0)
-			assert.equal(await storage.mock_getAllocatedTokenValue.call(employeeAddress, tokenA), 0)
-			assert.equal(await storage.mock_getAllocatedTokenValue.call(employeeAddress, tokenB), 0)
-			assert.equal(await storage.mock_getAllocatedTokenValue.call(employeeAddress, tokenC), 0)
-			assert.equal(await storage.mock_getPeggedTokenCount.call(employeeAddress), 0)
-			assert.equal(await storage.mock_getPeggedTokenValue.call(employeeAddress, tokenA), 0)
-			assert.equal(await storage.mock_getPeggedTokenValue.call(employeeAddress, tokenB), 0)
-			assert.equal(await storage.mock_getPeggedTokenValue.call(employeeAddress, tokenC), 0)
-			assert.equal(await storage.mock_getSalaryTokenValue.call(employeeAddress, tokenA), 0)
-			assert.equal(await storage.mock_getSalaryTokenValue.call(employeeAddress, tokenB), 0)
-			assert.equal(await storage.mock_getSalaryTokenValue.call(employeeAddress, tokenC), 0)
-			assert.equal(await storage.mock_getLatestTokenAllocation.call(employeeAddress), 0)
-			assert.equal(await storage.mock_getLatestPayday.call(employeeAddress), 0)
-			assert.equal(await storage.mock_getYearlyUSDSalary.call(employeeAddress), 0)
+			await storage.mock_throwIfNotRemoved.call(employeeAddress)
 		})
 	})
 
