@@ -129,39 +129,39 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 
 	// Get
 
-	function getCount() onlyOwner constant returns (uint) {
+	function getCount() constant returns (uint) {
 		return employeeCount;
 	}
 
-	function getId(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+	function getId(address _address) existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).id;
 	}
 
-	function getAddress(uint _id) onlyOwner existingEmployeeId(_id) constant returns (address) {
+	function getAddress(uint _id) existingEmployeeId(_id) constant returns (address) {
 		return employeesById[_id].accountAddress;
 	}
 
-	function getAllocatedTokenCount(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+	function getAllocatedTokenCount(address _address) existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).allocatedTokens.length();
 	}
 
-	function getAllocatedTokenAddress(address _address, uint _index) onlyOwner existingEmployeeAddress(_address) constant returns (address) {
+	function getAllocatedTokenAddress(address _address, uint _index) existingEmployeeAddress(_address) constant returns (address) {
 		return getEmployee(_address).allocatedTokens.getAddress(_index);
 	}
 
-	function getAllocatedTokenValue(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+	function getAllocatedTokenValue(address _address, address _token) existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).allocatedTokens.getUInt(_token);
 	}
 
-	function getPeggedTokenCount(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+	function getPeggedTokenCount(address _address) existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).peggedTokens.length();
 	}
 
-	function getPeggedTokenAddress(address _address, uint _index) onlyOwner existingEmployeeAddress(_address) constant returns (address) {
+	function getPeggedTokenAddress(address _address, uint _index) existingEmployeeAddress(_address) constant returns (address) {
 		return getEmployee(_address).peggedTokens.getAddress(_index);
 	}
 
-	function getPeggedTokenValue(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+	function getPeggedTokenValue(address _address, address _token) existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).peggedTokens.getUInt(_token);
 	}
 
@@ -173,39 +173,39 @@ contract EmployeeStorage is IEmployeeStorage, Ownable {
 		return getEmployee(_address).salaryTokens.getAddress(_index);
 	}
 
-	function getSalaryTokenValue(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+	function getSalaryTokenValue(address _address, address _token) existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).salaryTokens.getUInt(_token);
 	}
 
-	function getLatestTokenAllocation(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+	function getLatestTokenAllocation(address _address) existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).latestTokenAllocation;
 	}
 
-	function getLatestPayday(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+	function getLatestPayday(address _address) existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).latestPayday;
 	}
 
-	function getLatestTokenPayday(address _address, address _token) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+	function getLatestTokenPayday(address _address, address _token) existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).latestTokenPaydays.getUInt(_token);
 	}
 
-	function getYearlyUSDSalary(address _address) onlyOwner existingEmployeeAddress(_address) constant returns (uint) {
+	function getYearlyUSDSalary(address _address) existingEmployeeAddress(_address) constant returns (uint) {
 		return getEmployee(_address).yearlyUSDSalary;
 	}
 
-	function getYearlyUSDSalariesTotal() onlyOwner constant returns (uint) {
+	function getYearlyUSDSalariesTotal() constant returns (uint) {
 		return yearlyUSDSalariesTotal;
 	}
 
-	function getSalaryTokensTotalCount() onlyOwner constant returns (uint) {
+	function getSalaryTokensTotalCount() constant returns (uint) {
 		return salaryTokensTotal.length();
 	}
 
-	function getSalaryTokensTotalAddress(uint _index) onlyOwner constant returns (address) {
+	function getSalaryTokensTotalAddress(uint _index) constant returns (address) {
 		return salaryTokensTotal.getAddress(_index);
 	}
 
-	function getSalaryTokensTotalValue(address _token) onlyOwner constant returns (uint) {
+	function getSalaryTokensTotalValue(address _token) constant returns (uint) {
 		return salaryTokensTotal.getUInt(_token);
 	}
 
